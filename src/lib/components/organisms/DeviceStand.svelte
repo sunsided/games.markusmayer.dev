@@ -9,17 +9,37 @@
 	 */
 	let {
 		aspect = '5 / 3',
+		glass,
 		live = false,
 		screen,
 		front
-	}: { aspect?: string; live?: boolean; screen: Snippet; front?: Snippet } = $props();
+	}: {
+		aspect?: string;
+		/** Where the screen's glass sits, in percent of the object; the glare stays on it. */
+		glass?: { left: number; top: number; width: number; height: number };
+		live?: boolean;
+		screen: Snippet;
+		front?: Snippet;
+	} = $props();
 </script>
 
 <div class="device">
 	<div class="object" style:aspect-ratio={aspect}>
 		<div class="face">{@render screen()}</div>
 		<div class="sheen" aria-hidden="true"></div>
-		<Glare off={live} />
+		{#if glass}
+			<div
+				class="glass"
+				style:left={`${glass.left}%`}
+				style:top={`${glass.top}%`}
+				style:width={`${glass.width}%`}
+				style:height={`${glass.height}%`}
+			>
+				<Glare off={live} />
+			</div>
+		{:else}
+			<Glare off={live} />
+		{/if}
 		{#if front}<div class="front">{@render front()}</div>{/if}
 	</div>
 	<div class="easel" aria-hidden="true">
@@ -71,6 +91,13 @@
 			rgb(255 255 255 / 0.03) 25%,
 			transparent 45%
 		);
+	}
+
+	/* The screen's glass within the case, so the glare lies on it alone. */
+	.glass {
+		position: absolute;
+		border-radius: 0.4cqi;
+		pointer-events: none;
 	}
 
 	/* The easel: a clear lip the object rests on, and two feet, all catching edge light. */

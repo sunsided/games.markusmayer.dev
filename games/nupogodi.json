@@ -13,6 +13,7 @@
 	"web": {
 		"asset": "nupogodi-{version}-web.zip",
 		"aspect": "1120 / 672",
+		"glass": [230, 86, 660, 416],
 		"module": "nupogodi.js",
 		"canvas": "nupogodi",
 		"assets": "assets",

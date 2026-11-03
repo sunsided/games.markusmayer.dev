@@ -40,6 +40,12 @@ export interface Web {
 	 */
 	native?: [number, number];
 	/**
+	 * The screen's glass within the frame, `[x, y, width, height]` in the units of `aspect`
+	 * (which must then be `width / height`). For a game that draws its own hardware: the
+	 * glare stays on the glass rather than the whole case.
+	 */
+	glass?: [number, number, number, number];
+	/**
 	 * Embed the game in the page rather than framing it: its wasm-bindgen module in the
 	 * build folder (`cheese.js`) and the id of the canvas it binds to (`cheese`). The Play
 	 * click then counts as the game's own, so it may start its sound at once; a framed game
@@ -206,6 +212,24 @@ export function validate(value: unknown, where: string): Game {
 		) {
 			errors.push('web.native: expected [width, height] in whole pixels');
 		}
+		const gl = g.web.glass;
+		if (gl !== undefined) {
+			const frame = aspectSize(g.web.aspect);
+			if (
+				!frame ||
+				!Array.isArray(gl) ||
+				gl.length !== 4 ||
+				!gl.every((v) => typeof v === 'number' && v >= 0) ||
+				gl[2] <= 0 ||
+				gl[3] <= 0 ||
+				gl[0] + gl[2] > frame[0] ||
+				gl[1] + gl[3] > frame[1]
+			) {
+				errors.push(
+					'web.glass: expected [x, y, width, height] inside the frame, with web.aspect as "width / height"'
+				);
+			}
+		}
 	}
 	if (g.cover !== undefined) {
 		str(g.cover.path, 'cover.path', COVER_PATH);
@@ -244,4 +268,10 @@ export function compareVersions(a: string, b: string): number {
 	if (!x.pre) return 1;
 	if (!y.pre) return -1;
 	return x.pre.localeCompare(y.pre, 'en', { numeric: true });
+}
+
+/** `"1120 / 672"` as `[1120, 672]`; undefined for anything else. */
+export function aspectSize(aspect: string | undefined): [number, number] | undefined {
+	const m = aspect?.match(/^\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*$/);
+	return m ? [Number(m[1]), Number(m[2])] : undefined;
 }

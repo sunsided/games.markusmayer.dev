@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { Released } from '#lib/registry.js';
+	import { aspectSize, type Released } from '#lib/registry.js';
 	import CrtScreen from '../molecules/CrtScreen.svelte';
 	import ArcadeCabinet from './ArcadeCabinet.svelte';
 	import DeviceStand from './DeviceStand.svelte';
@@ -28,6 +28,18 @@
 	} = $props();
 
 	const aspect = $derived(game.web?.aspect ?? '16 / 10');
+	/** The glass as percentages of the frame, for a device that draws its own case. */
+	const glass = $derived.by(() => {
+		const g = game.web?.glass;
+		const f = aspectSize(game.web?.aspect);
+		if (!g || !f) return undefined;
+		return {
+			left: (g[0] / f[0]) * 100,
+			top: (g[1] / f[1]) * 100,
+			width: (g[2] / f[0]) * 100,
+			height: (g[3] / f[1]) * 100
+		};
+	});
 </script>
 
 <div class="machine" data-frame={game.frame ?? 'pc'} style:--game-accent={game.accent}>
@@ -36,7 +48,7 @@
 	{/snippet}
 	{#snippet face()}{@render children()}{/snippet}
 	{#if game.frame === 'device'}
-		<DeviceStand {aspect} {live} screen={face} {front} />
+		<DeviceStand {aspect} {glass} {live} screen={face} {front} />
 	{:else if game.frame === 'arcade'}
 		<ArcadeCabinet title={game.title} screen={tube} />
 	{:else}

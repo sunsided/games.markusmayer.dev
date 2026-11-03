@@ -110,6 +110,16 @@
 					"minItems": 2,
 					"maxItems": 2
 				},
+				"glass": {
+					"description": "The screen's glass within the frame, [x, y, width, height] in the units of `aspect` (which must then read \"width / height\"). For a game that draws its own hardware: the mouse glare stays on the glass rather than the whole case.",
+					"type": "array",
+					"items": {
+						"type": "number",
+						"minimum": 0
+					},
+					"minItems": 4,
+					"maxItems": 4
+				},
 				"module": {
 					"description": "Embed the game in the page: its wasm-bindgen module in the build folder, e.g. \"cheese.js\". Needs `canvas`. The Play click then counts for the game, so its sound may start at once.",
 					"type": "string",
