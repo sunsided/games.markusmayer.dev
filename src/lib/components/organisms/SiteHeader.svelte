@@ -115,10 +115,12 @@
 		z-index: -1;
 		inline-size: min(90vmin, 60rem);
 		block-size: min(90vmin, 60rem);
-		translate: -50% -50%;
 		pointer-events: none;
 		opacity: 0;
-		transform: scale(0.04) rotate(-90deg);
+		/* Centred in `transform` itself, not with `translate`: Lightning CSS 1.33, Vite's
+		   minifier, drops the separate `translate` from this rule, and the burst unfolded
+		   half its size below and right of the mark. */
+		transform: translate(-50%, -50%) scale(0.04) rotate(-90deg);
 		transition:
 			opacity 260ms var(--ease-out),
 			transform 700ms var(--ease-snap);
@@ -180,7 +182,7 @@
 	.icon:hover .burst,
 	.icon:focus-visible .burst {
 		opacity: 1;
-		transform: none;
+		transform: translate(-50%, -50%);
 	}
 	.icon:hover .burst::before,
 	.icon:focus-visible .burst::before {
