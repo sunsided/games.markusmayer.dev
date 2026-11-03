@@ -39,59 +39,62 @@ with the current tag.
 ## Adding a game
 
 1. Write `games/<slug>.json` here (copy one). Merge it.
-2. In the game repository: set variable `GAMES_APP_ID` and secret `GAMES_APP_PRIVATE_KEY`
-   (`gh variable set` / `gh secret set`), and add to its release workflow, after the job
-   that publishes the release:
+2. In the game repository: set variable `GAMES_ANNOUNCE_APP_ID` and secret
+   `GAMES_ANNOUNCE_APP_PRIVATE_KEY` (the **announce** app's, see below), and add to its
+   release workflow, after the job that publishes the release:
 
    ```yaml
    announce:
      needs: [release]
      uses: sunsided/games.markusmayer.dev/.github/workflows/announce.yml@main
      with:
-       app-id: ${{ vars.GAMES_APP_ID }}
+       app-id: ${{ vars.GAMES_ANNOUNCE_APP_ID }}
      secrets:
-       private-key: ${{ secrets.GAMES_APP_PRIVATE_KEY }}
+       private-key: ${{ secrets.GAMES_ANNOUNCE_APP_PRIVATE_KEY }}
    ```
 
    For a web game the release also needs `SHA256SUMS` and an
    `actions/attest-build-provenance` attestation covering the web zip (cheesed and
-   cookie-doh already do both). Set `"attest": false` in `web` to skip the latter.
+   cookie-doh already do both). Set `"attest": false` in `web` to skip the latter. The zip
+   may hold only regular files and folders: symlinks, absolute paths and `..` are refused.
 
 ## One-time setup
 
-### GitHub App (the ping and the bot PR)
+### Two GitHub Apps
 
-1. Create an app under your account: _Settings → Developer settings → GitHub Apps → New_.
-   No webhook. Repository permissions: **Contents: read & write**, **Pull requests: read &
-   write**, **Metadata: read**. Only on this account.
-2. Install it on **this repository only**. Generate a private key.
-3. Here: variable `GAMES_APP_ID`, secret `GAMES_APP_PRIVATE_KEY`.
-4. In each game repo: the same variable and secret (see above). The token they mint is
-   scoped by `announce.yml` to this one repository.
+Both are installed on **this repository only**, with no webhook.
 
-`repository_dispatch` needs Contents: write; the bot PR needs it too. A PR opened with
-`GITHUB_TOKEN` would not trigger CI, which is why the app opens it.
+| App                       | Permissions                                     | Key lives in    |
+| ------------------------- | ----------------------------------------------- | --------------- |
+| `sunsided-games-release`  | Contents: write, Pull requests: write, Metadata | this repo only  |
+| `sunsided-games-announce` | Contents: write, Metadata                       | every game repo |
+
+- This repo: variable `GAMES_APP_ID`, secret `GAMES_APP_PRIVATE_KEY` (release app). It opens
+  and auto-merges the registry PR. A PR opened with `GITHUB_TOKEN` would not trigger CI.
+- Game repos: `GAMES_ANNOUNCE_APP_ID`, `GAMES_ANNOUNCE_APP_PRIVATE_KEY` (announce app).
+  `repository_dispatch` needs Contents: write and nothing more.
+
+The split is what keeps a compromised game repository from shipping code here: with the
+announce key alone it cannot open a pull request, so nothing it pushes gets past the
+ruleset into `main`, and only `main` can deploy (the Workload Identity provider is bound to
+`refs/heads/main`). What it can do is send a dispatch, which still has to pass the release
+checks in `sync-game.ts`, or push a stray branch.
 
 ### This repository
 
-- Public (game repos call `announce.yml` from it; reusable workflows must be reachable).
+- Public, or _Settings → Actions → General → Access_ opened to repositories owned by the
+  user: game repos call `announce.yml` from here.
 - _Settings → General_: allow auto-merge, allow squash merge, delete head branches.
-- Branch protection / ruleset on `main`: require the `ci` status check.
+- Ruleset on `main`: require a pull request, require the `ci` status check, block force
+  pushes and deletion.
 - A `release` label (optional; create-pull-request creates it if missing).
 
 ### Deploying
 
 Same pattern as markusmayer.dev: bucket `games.markusmayer.dev` behind the Google load
 balancer with Cloud CDN, fronted by Cloudflare; GitHub authenticates through Workload
-Identity Federation.
-
-- Bucket with `MainPageSuffix=index.html`, `NotFoundPage=404.html`, public read.
-- Backend bucket + host rule for `games.markusmayer.dev` on the url map; DNS at Cloudflare.
-- Allow this repository in the WIF provider's attribute condition, and give the deploy
-  service account `roles/storage.objectAdmin` on the bucket plus the CDN invalidation
-  permission (`compute.urlMaps.invalidateCache`).
-- Environment `production` with variables `GCP_WIF_PROVIDER`, `GCP_DEPLOY_SA`,
-  `GCS_BUCKET`, `GCP_URL_MAP`, `GCP_PROJECT`.
+Identity Federation. Step-by-step `gcloud`, `cf` and `gh` commands, runnable from any
+machine: [docs/infrastructure.md](docs/infrastructure.md).
 
 ## Local
 
