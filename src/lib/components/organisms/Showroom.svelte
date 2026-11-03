@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { Released } from '#lib/registry.js';
+	import RayBurst from '../atoms/RayBurst.svelte';
 	import Plaque from '../molecules/Plaque.svelte';
 	import GameScreen from './GameScreen.svelte';
 	import Machine from './Machine.svelte';
@@ -17,6 +18,7 @@
 	{#each games as game, i (game.slug)}
 		<li class="exhibit" data-frame={game.frame ?? 'pc'} style:--game-accent={game.accent}>
 			<div class="stage">
+				<RayBurst size="min(150%, 52rem)" />
 				<Machine {game} power delay={250 + i * 350}>
 					<GameScreen {game} />
 				</Machine>
@@ -127,6 +129,22 @@
 		positioned ancestor, which has to be the whole exhibit, machine included. (The floor
 		is already behind it, in the floor's own stacking context.)
 	*/
+
+	/*
+		The hovered exhibit's kaleidoscope: rays in its own colour and the three of the house
+		unfold behind the machine, in front of the wall, under the machine and its plaque.
+	*/
+	.exhibit {
+		--ray-a: var(--game-accent);
+		--ray-b: #00f0ff;
+		--ray-c: #ff2eaa;
+		--ray-d: #a85cff;
+	}
+	.exhibit:hover,
+	.exhibit:focus-within {
+		--burst-open: 1;
+		--burst-play: running;
+	}
 
 	/* Answering the pointer, without moving anything: the exhibit's screen comes up a little. */
 	.exhibit :global(.crt) {
