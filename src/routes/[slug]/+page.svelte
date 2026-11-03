@@ -51,7 +51,7 @@
 	<a href={game.release.url}>{game.release.version}</a>
 {/snippet}
 {#snippet build()}
-	<Hash value={game.web!.sha256} />, attested by
+	<Hash value={game.web!.sha256!} />, attested by
 	<a href={`https://github.com/${game.repo}/attestations`}>GitHub</a>
 {/snippet}
 {#snippet source()}
@@ -177,6 +177,9 @@
 	}
 	.game[data-frame='pc'] .rig {
 		max-inline-size: calc((100dvh - 9rem) * 1.12);
+	}
+	.game[data-frame='device'] .rig {
+		max-inline-size: calc((100dvh - 9rem) * 1.55);
 	}
 	.game[data-frame='arcade'] .rig {
 		max-inline-size: calc((100dvh - 8rem) * 0.7);

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Game } from '#lib/registry.js';
+	import type { Released } from '#lib/registry.js';
 	import Plaque from '../molecules/Plaque.svelte';
 	import GameScreen from './GameScreen.svelte';
 	import Machine from './Machine.svelte';
@@ -10,7 +10,7 @@
 	 * each with its plaque. The screens switch on one after another when the page opens,
 	 * the page's one piece of unprompted motion.
 	 */
-	let { games }: { games: Game[] } = $props();
+	let { games }: { games: Released[] } = $props();
 </script>
 
 <ul class="floor">
@@ -37,6 +37,10 @@
 		grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
 		gap: var(--space-8) var(--floor-gap);
 		align-items: end;
+		/* Each exhibit spans a pair of rows, machine and plaque, shared across the line (subgrid
+		   below): machines of any height stand on one floor line, plaques of any length start
+		   level under them. */
+		grid-auto-rows: auto;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -45,8 +49,12 @@
 	.exhibit {
 		position: relative;
 		display: grid;
-		grid-template-rows: 1fr auto;
-		gap: var(--space-6);
+		grid-row: span 2;
+		grid-template-rows: subgrid;
+		row-gap: var(--space-6);
+	}
+	.exhibit > :global(.plaque) {
+		align-self: start;
 	}
 	.stage {
 		position: relative;
@@ -62,6 +70,9 @@
 	}
 	.exhibit[data-frame='arcade'] .stage > :global(.machine) {
 		inline-size: 78%;
+	}
+	.exhibit[data-frame='device'] .stage > :global(.machine) {
+		inline-size: 96%;
 	}
 
 	/*

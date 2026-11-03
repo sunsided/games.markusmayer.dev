@@ -4,7 +4,7 @@
 	import { ORIGIN } from '#lib/site.js';
 
 	const description =
-		'Small, silly games in the clothes of DOS PCs and arcade cabinets, written in Rust and playable right in the browser.';
+		'Small, silly games in the clothes of DOS PCs, arcade cabinets and LCD handhelds, written in Rust and playable right in the browser.';
 </script>
 
 <svelte:head>
@@ -18,8 +18,8 @@
 <section class="intro">
 	<h1>Pick a machine. Press Play.</h1>
 	<p class="lede">
-		Small, silly games in the clothes of DOS PCs and arcade cabinets. Pick one and it runs right
-		here in your browser, nothing to install.
+		Small, silly games in the clothes of DOS PCs, arcade cabinets and LCD handhelds. Pick one and it
+		runs right here in your browser, nothing to install.
 	</p>
 </section>
 

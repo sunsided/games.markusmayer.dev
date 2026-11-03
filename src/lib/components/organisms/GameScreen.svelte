@@ -41,7 +41,7 @@
 
 <script lang="ts">
 	import { asset } from '$app/paths';
-	import { buildPath, coverPath, toQuery, type Game } from '#lib/registry.js';
+	import { buildPath, coverPath, toQuery, type Released } from '#lib/registry.js';
 
 	// Fetched by `task builds`, so not static files the type of asset() knows at check time.
 	type Asset = Parameters<typeof asset>[0];
@@ -61,7 +61,7 @@
 		screen = $bindable(),
 		options
 	}: {
-		game: Game;
+		game: Released;
 		playing?: boolean;
 		/** The element the game draws in, canvas or frame: for focus and fullscreen. */
 		screen?: HTMLElement;
@@ -125,6 +125,10 @@
 		}
 		const e = entry;
 		setData(e.canvas, launch);
+		// Where the game finds its assets: in the pinned build folder, not beside this page.
+		if (web!.assets) {
+			e.canvas.dataset.assets = new URL(folder + web!.assets, document.baseURI).pathname;
+		}
 		slot.append(e.canvas);
 		screen = e.canvas;
 
