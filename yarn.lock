@@ -5,6 +5,20 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
+"@fontsource-variable/archivo@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource-variable/archivo@npm:5.3.0"
+  checksum: 10c0/3af011f6ee09716625424c518bc9c4da93aa0989fc09904398451a125ef738d82af7d74569e195082dac6fc1df1c3a4aeba5d6d85f1a652245d001ed3aaf0c8c
+  languageName: node
+  linkType: hard
+
+"@fontsource/silkscreen@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/silkscreen@npm:5.3.0"
+  checksum: 10c0/b8ceea2b37c1f69c367deb9316d1e0043680f620bc61bef4c3a68068a42302ee2da876b8f456814283fef4d6575fa67a3346a24fe364c9cd922eb560f230887f
+  languageName: node
+  linkType: hard
+
 "@isaacs/fs-minipass@npm:^4.0.0":
   version: 4.0.1
   resolution: "@isaacs/fs-minipass@npm:4.0.1"
@@ -188,6 +202,18 @@ __metadata:
   version: 1.1.0
   resolution: "@standard-schema/spec@npm:1.1.0"
   checksum: 10c0/d90f55acde4b2deb983529c87e8025fa693de1a5e8b49ecc6eb84d1fd96328add0e03d7d551442156c7432fd78165b2c26ff561b970a9a881f046abb78d6a526
+  languageName: node
+  linkType: hard
+
+"@sunsided/web-visual-fx@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@sunsided/web-visual-fx@npm:1.1.0"
+  peerDependencies:
+    svelte: ^5.0.0
+  peerDependenciesMeta:
+    svelte:
+      optional: true
+  checksum: 10c0/bb07118465a16338dc939d15fb5b88df58b9906211a776925588973946c550178f466c065b261bd440b1aec7eaf900c01889bc6419e932be83e1bbcffa7b4a0d
   languageName: node
   linkType: hard
 
@@ -427,6 +453,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "games-markusmayer-dev@workspace:."
   dependencies:
+    "@fontsource-variable/archivo": "npm:^5.3.0"
+    "@fontsource/silkscreen": "npm:^5.3.0"
+    "@sunsided/web-visual-fx": "npm:^1.1.0"
     "@sveltejs/adapter-static": "npm:^4.0.0"
     "@sveltejs/kit": "npm:^3.1.0"
     "@sveltejs/vite-plugin-svelte": "npm:^7.3.0"

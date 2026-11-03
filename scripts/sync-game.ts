@@ -17,8 +17,16 @@ import { appendFileSync, mkdtempSync, writeFileSync, readFileSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { REPO, VERSION, compareVersions, fill, validate } from '../src/lib/registry.ts';
 import {
+	REPO,
+	VERSION,
+	compareVersions,
+	coverSource,
+	fill,
+	validate
+} from '../src/lib/registry.ts';
+import {
+	checkImage,
 	checkZip,
 	download,
 	gameFile,
@@ -109,6 +117,20 @@ if (game.web) {
 	checkZip(zip, game.web.entry ?? 'index.html');
 
 	next.web = { ...game.web, sha256: pinned };
+}
+
+// The title art at the new tag. A cover that moved or went away fails the sync rather than
+// silently dropping the card: fix `cover.path` (or remove `cover`) and run it again.
+if (game.cover) {
+	const dir = mkdtempSync(join(tmpdir(), `cover-${game.slug}-`));
+	const file = join(dir, 'cover');
+	try {
+		await download(coverSource(game.repo, tag, game.cover.path), file);
+	} catch (e) {
+		throw new Error(`${game.repo} ${tag} has no ${game.cover.path} (cover.path): ${e}`);
+	}
+	checkImage(file, game.cover.path);
+	next.cover = { ...game.cover, sha256: sha256(file) };
 }
 
 validate(next, `games/${game.slug}.json (updated)`);
