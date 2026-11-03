@@ -8,18 +8,22 @@ name: Announce a game release
 #     needs: [release]
 #     uses: sunsided/games.markusmayer.dev/.github/workflows/announce.yml@main
 #     with:
-#       app-id: ${{ vars.GAMES_APP_ID }}
+#       app-id: ${{ vars.GAMES_ANNOUNCE_APP_ID }}
 #     secrets:
-#       private-key: ${{ secrets.GAMES_APP_PRIVATE_KEY }}
+#       private-key: ${{ secrets.GAMES_ANNOUNCE_APP_PRIVATE_KEY }}
 #
-# The token is the games GitHub App's, scoped to this one repository and valid for an
-# hour. The game repository holds nothing that can write anywhere else.
+# The key is the *announce* app's (sunsided-games-announce), not the app that opens and
+# auto-merges the registry PR. The announce app has Contents: write and nothing else,
+# which is what repository_dispatch needs, and it is installed on this repository only.
+# Without Pull requests: write a leaked key cannot open a PR, so it cannot get code past
+# the `ci` check into main; it can push stray branches, which deploy nothing (the deploy
+# identity is bound to refs/heads/main). The PR app's key lives only in this repository.
 
 on:
   workflow_call:
     inputs:
       app-id:
-        description: The games GitHub App's ID
+        description: The announce GitHub App's ID
         type: string
         required: true
       tag:
@@ -28,7 +32,7 @@ on:
         default: ''
     secrets:
       private-key:
-        description: The games GitHub App's private key
+        description: The announce GitHub App's private key
         required: true
 
 permissions: {}
@@ -44,6 +48,8 @@ jobs:
           private-key: ${{ secrets.private-key }}
           owner: sunsided
           repositories: games.markusmayer.dev
+          # Belt and braces: even this token asks for no more than dispatch needs.
+          permission-contents: write
 
       - name: Send game-released
         env:
