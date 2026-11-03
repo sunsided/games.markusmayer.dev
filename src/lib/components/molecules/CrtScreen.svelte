@@ -33,8 +33,8 @@
 	/*
 		The bulge. A CRT's face is convex, so the picture bends toward its edges. web-visual-fx's
 		liquid glass computes exactly that kind of displacement for a curved bezel; applied to
-		the picture rather than the backdrop, it bends the image the way the tube does, with a
-		touch of colour fringe at the rim. Not while a game runs: it would distort play and
+		the picture rather than the backdrop, it bends the image the way the tube does, with
+		chromatic aberration at the rim: red bent a little more than green, blue a little less. Not while a game runs: it would distort play and
 		misplace clicks, and the games bring their own curvature.
 	*/
 	const lens = $derived.by(() => {
@@ -52,7 +52,7 @@
 		canvas.height = shape.height;
 		const data = liquidGlass.displacementMap(shape);
 		canvas.getContext('2d')?.putImageData(new ImageData(data, shape.width, shape.height), 0, 0);
-		return { ...shape, map: canvas.toDataURL('image/png'), refraction: short * 0.035 };
+		return { ...shape, map: canvas.toDataURL('image/png'), refraction: short * 0.04 };
 	});
 
 	/*
@@ -119,7 +119,7 @@
 				height={lens.height}
 				map={lens.map}
 				refraction={lens.refraction}
-				fringe={0.18}
+				fringe={0.5}
 				bezel={lens.bezel}
 				specular={0}
 			/>

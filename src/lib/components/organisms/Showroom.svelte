@@ -111,10 +111,11 @@
 			linear-gradient(180deg, transparent 0%, transparent 84%, rgb(255 255 255 / 0.12) 100%);
 	}
 
-	/* The plaques stand on the floor, in front of it. */
-	.exhibit > :global(.plaque) {
-		position: relative;
-	}
+	/*
+		The plaque must not be positioned: its title's link stretches over the nearest
+		positioned ancestor, which has to be the whole exhibit, machine included. (The floor
+		is already behind it, in the floor's own stacking context.)
+	*/
 
 	/* Answering the pointer, without moving anything: the exhibit's screen comes up a little. */
 	.exhibit :global(.crt) {
