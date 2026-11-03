@@ -5,7 +5,15 @@
 //
 //   node scripts/fetch-builds.ts [slug...]
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync
+} from 'node:fs';
 import { join } from 'node:path';
 import { webAsset } from '../src/lib/registry.ts';
 import {
@@ -60,5 +68,8 @@ for (const game of games) {
 	mkdirSync(dest, { recursive: true });
 	run('unzip', ['-q', '-o', zip, '-x', '.trunk-lock', '-d', dest]);
 	assertPlainTree(dest);
+	if (!statSync(join(dest, entry), { throwIfNoEntry: false })?.isFile()) {
+		throw new Error(`${game.slug}: ${entry} missing after unpacking ${asset}`);
+	}
 	writeFileSync(join(dest, 'VERSION'), `${stamp}\n`);
 }

@@ -7,7 +7,8 @@
 // and onboarding a game is a hand-written games/<slug>.json. The release must be published
 // (not a draft or prerelease), and for a web game its zip must match the line in the
 // release's SHA256SUMS and carry a build-provenance attestation from that repository,
-// and hold only plain files (no symlinks, no paths leaving the folder; see checkZip).
+// and hold only regular files and folders (no symlinks, no paths leaving the folder; see
+// checkZip).
 // Older tags than the one pinned are refused unless --force.
 //
 // Writes slug, version and changed to $GITHUB_OUTPUT when set.

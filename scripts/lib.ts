@@ -59,9 +59,9 @@ export function verifyProvenance(file: string, repo: string) {
 
 /**
  * Refuses a web zip whose contents could escape or leak once unpacked and published:
- * symlinks or other non-regular entries (a link to a runner file would be uploaded to
- * the public bucket), absolute paths, `..` segments, backslashes. Also requires `entry`
- * at the root. Returns the entry names.
+ * anything other than regular files and folders (a symlink to a runner file would be
+ * uploaded to the public bucket), absolute paths, `..` segments, backslashes. Also requires
+ * `entry` as a regular file at the root. Returns the entry names.
  */
 export function checkZip(zip: string, entry: string): string[] {
 	const names = run('zipinfo', ['-1', zip], { quiet: true }).split('\n').filter(Boolean);
@@ -81,7 +81,13 @@ export function checkZip(zip: string, entry: string): string[] {
 			name.split('/').includes('..')
 	);
 	if (bad.length) throw new Error(`${zip}: refusing unsafe entries: ${bad.join(', ')}`);
-	if (!names.includes(entry)) throw new Error(`${zip}: no ${entry} at its root`);
+	// The entry must be one regular file, not a folder, and nothing may also claim its name
+	// as a folder: unzip would then fail on it, or leave the page without its entry.
+	const at = names.indexOf(entry);
+	if (at < 0 || modes[at] !== '-') throw new Error(`${zip}: no ${entry} file at its root`);
+	if (names.some((name) => name.startsWith(`${entry}/`))) {
+		throw new Error(`${zip}: ${entry} is also used as a folder`);
+	}
 	return names;
 }
 
