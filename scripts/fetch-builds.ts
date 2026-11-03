@@ -18,7 +18,13 @@ import {
 	writeFileSync
 } from 'node:fs';
 import { join } from 'node:path';
-import { coverPath, coverSource, webAsset, type Game } from '../src/lib/registry.ts';
+import {
+	coverPath,
+	coverSource,
+	isReleased,
+	webAsset,
+	type Released
+} from '../src/lib/registry.ts';
 import {
 	ROOT,
 	assertPlainTree,
@@ -32,7 +38,10 @@ import {
 } from './lib.ts';
 
 const only = new Set(process.argv.slice(2));
-const games = loadGames().filter((g) => only.size === 0 || only.has(g.slug));
+// Registered but not yet released games have nothing to fetch.
+const games = loadGames()
+	.filter(isReleased)
+	.filter((g) => only.size === 0 || only.has(g.slug));
 
 // Covers first: small, and a page without its build still wants its card.
 const coversDir = join(ROOT, 'static', 'covers');
@@ -48,9 +57,9 @@ if (only.size === 0) {
 }
 for (const game of games) await fetchCover(game);
 
-async function fetchCover(game: Game) {
+async function fetchCover(game: Released) {
 	const cover = game.cover;
-	if (!cover) return;
+	if (!cover?.sha256) return;
 	const dest = join(ROOT, 'static', coverPath(game)!);
 	if (existsSync(dest) && sha256(dest) === cover.sha256) return;
 	console.log(`${game.slug}: fetching cover ${cover.path}`);
@@ -68,7 +77,7 @@ for (const game of games) {
 	const web = game.web;
 	const version = game.release.version;
 	const asset = webAsset(game)!;
-	const stamp = `${version} ${web.sha256}`;
+	const stamp = `${version} ${web.sha256!}`;
 	const base = join(ROOT, 'static', 'builds', game.slug);
 	const dest = join(base, version);
 	const entry = web.entry ?? 'index.html';

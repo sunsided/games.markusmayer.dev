@@ -4,7 +4,7 @@
 	"title": "Game registry entry",
 	"description": "One game on games.markusmayer.dev. Editorial fields are written by hand; `release` and `web.sha256` are rewritten by scripts/sync-game.ts when the game's repository announces a release.",
 	"type": "object",
-	"required": ["slug", "title", "tagline", "repo", "release"],
+	"required": ["slug", "title", "tagline", "repo"],
 	"additionalProperties": false,
 	"properties": {
 		"$schema": {
@@ -44,8 +44,8 @@
 			"type": "boolean"
 		},
 		"frame": {
-			"description": "The machine it stands in: a beige VGA monitor or an arcade cabinet.",
-			"enum": ["pc", "arcade"],
+			"description": "The machine it stands in: a beige VGA monitor, an arcade cabinet, or `device` for a game that draws its own hardware (shown on a display easel).",
+			"enum": ["pc", "arcade", "device"],
 			"default": "pc"
 		},
 		"platform": {
@@ -74,12 +74,13 @@
 					"type": "string",
 					"format": "uri"
 				}
-			}
+			},
+			"description": "The release the site serves. Leave it out when onboarding a game that has not released yet: it is then neither listed nor built, and its first release ping fills it in."
 		},
 		"web": {
 			"description": "Present for games that run in the browser. The release asset is a zip with an index.html using relative paths; it is self-hosted under /builds/<slug>/<version>/ and framed by /<slug>/.",
 			"type": "object",
-			"required": ["asset", "sha256"],
+			"required": ["asset"],
 			"additionalProperties": false,
 			"properties": {
 				"asset": {
@@ -88,7 +89,8 @@
 				},
 				"sha256": {
 					"type": "string",
-					"pattern": "^[0-9a-f]{64}$"
+					"pattern": "^[0-9a-f]{64}$",
+					"description": "Pinned with the release; filled in by the release sync."
 				},
 				"entry": {
 					"type": "string",
@@ -119,6 +121,10 @@
 				},
 				"restart": {
 					"description": "The event the embedded game restarts on, dispatched on its canvas with the options as detail.",
+					"type": "string"
+				},
+				"assets": {
+					"description": "Folder in the build the game loads its assets from, handed to an embedded game as data-assets on its canvas, resolved to the pinned build.",
 					"type": "string"
 				},
 				"options": {
@@ -180,7 +186,7 @@
 		"cover": {
 			"description": "Title art from the game's repository at the release tag. scripts/sync-game.ts re-pins sha256 on every release; the build serves it from /covers/<slug>-<hash>.<ext>.",
 			"type": "object",
-			"required": ["path", "sha256", "alt"],
+			"required": ["path", "alt"],
 			"additionalProperties": false,
 			"properties": {
 				"path": {
@@ -190,7 +196,8 @@
 				},
 				"sha256": {
 					"type": "string",
-					"pattern": "^[0-9a-f]{64}$"
+					"pattern": "^[0-9a-f]{64}$",
+					"description": "Pinned with the release; filled in by the release sync."
 				},
 				"alt": {
 					"type": "string"

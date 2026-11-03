@@ -36,7 +36,8 @@ with the current tag.
 - **Anything else**: leave out `web`, give `links` (download, store page, itch.io…). It
   gets a card and a page with those links.
 - **Its machine**: `frame` is the hardware it stands in on the showroom floor (`pc`, a beige
-  VGA monitor, or `arcade`, an upright cabinet), `platform` the era it is styled on, in
+  VGA monitor, `arcade`, an upright cabinet, or `device` for a game that draws its own
+  hardware, shown on a display easel), `platform` the era it is styled on, in
   words, and `accent` the colour its screen throws into the room.
 - **Launching**: with `web.module` and `web.canvas` (the wasm-bindgen module in the build
   folder and the id of the canvas it binds to), the game runs in the page itself, so the
@@ -57,7 +58,10 @@ with the current tag.
 
 ## Adding a game
 
-1. Write `games/<slug>.json` here (copy one). Merge it.
+1. Write `games/<slug>.json` here (copy one). Leave out `release`, `web.sha256` and
+   `cover.sha256` if the game has not released yet: it stays off the floor until its first
+   release ping fills them in. Merge it. `web.assets` names the build's asset folder for
+   games that load files at runtime (handed over as `data-assets`).
 2. In the game repository: set variable `GAMES_ANNOUNCE_APP_ID` and secret
    `GAMES_ANNOUNCE_APP_PRIVATE_KEY` (the **announce** app's, see below), and add to its
    release workflow, after the job that publishes the release:

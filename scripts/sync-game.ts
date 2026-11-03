@@ -4,7 +4,8 @@
 //   node scripts/sync-game.ts --repo sunsided/cheesed --tag v0.1.3 [--force]
 //
 // Only repositories already in games/*.json are accepted: the registry is the allowlist,
-// and onboarding a game is a hand-written games/<slug>.json. The release must be published
+// and onboarding a game is a hand-written games/<slug>.json, which may leave out `release`
+// and the hashes until this fills them in from its first release. The release must be published
 // (not a draft or prerelease), and for a web game its zip must match the line in the
 // release's SHA256SUMS and carry a build-provenance attestation from that repository,
 // and hold only regular files and folders (no symlinks, no paths leaving the folder; see
@@ -68,16 +69,16 @@ const output = (pairs: Record<string, string>) => {
 		appendFileSync(process.env.GITHUB_OUTPUT, `${k}=${v}\n`);
 };
 
-const cmp = compareVersions(tag, game.release.version);
+// A registered game's first release has nothing to compare against.
+const pinned = game.release?.version;
+const cmp = pinned ? compareVersions(tag, pinned) : 1;
 if (cmp === 0) {
 	console.log(`${game.slug} is already at ${tag}; nothing to do.`);
 	output({ slug: game.slug, version: tag, changed: 'false' });
 	process.exit(0);
 }
 if (cmp < 0 && !values.force) {
-	throw new Error(
-		`${game.slug}: ${tag} is older than pinned ${game.release.version} (use --force)`
-	);
+	throw new Error(`${game.slug}: ${tag} is older than pinned ${pinned} (use --force)`);
 }
 
 const release = await githubApi<GhRelease>(
@@ -135,5 +136,5 @@ if (game.cover) {
 
 validate(next, `games/${game.slug}.json (updated)`);
 writeFileSync(gameFile(game.slug), `${JSON.stringify(next, null, '\t')}\n`);
-console.log(`${game.slug}: ${game.release.version} → ${tag}`);
+console.log(`${game.slug}: ${pinned ?? 'first release'} → ${tag}`);
 output({ slug: game.slug, repo: game.repo, version: tag, changed: 'true' });

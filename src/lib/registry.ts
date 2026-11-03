@@ -30,7 +30,8 @@ export interface Variant {
 export interface Web {
 	/** Release asset name; `{version}` is replaced by the tag. */
 	asset: string;
-	sha256: string;
+	/** Pinned with the release; absent until the first one. */
+	sha256?: string;
 	entry?: string;
 	aspect?: string;
 	/**
@@ -48,6 +49,11 @@ export interface Web {
 	canvas?: string;
 	/** The event an embedded game restarts on, dispatched on its canvas with the options. */
 	restart?: string;
+	/**
+	 * Folder in the build the game loads its assets from, handed to an embedded game as
+	 * `data-assets` on its canvas (resolved to the pinned build), e.g. `assets`.
+	 */
+	assets?: string;
 	/** Launch options for the default start. */
 	options?: Options;
 	/** Named ways to launch the same build; the first is the one Play starts. */
@@ -62,15 +68,17 @@ export interface Web {
 export interface Cover {
 	/** Path in the game repository, e.g. `docs/screenshots/title.png`. */
 	path: string;
-	sha256: string;
+	/** Pinned with the release; absent until the first one. */
+	sha256?: string;
 	alt: string;
 	/** Shown under the poster, e.g. what the art's licence asks for. */
 	credit?: string;
 }
 
 /** The hardware a game is shown in, after the era it is styled on. */
-export type Frame = 'pc' | 'arcade';
-export const FRAMES: readonly Frame[] = ['pc', 'arcade'];
+export type Frame = 'pc' | 'arcade' | 'device';
+/** `device`: the game draws its own hardware (a handheld, say), so it gets no machine. */
+export const FRAMES: readonly Frame[] = ['pc', 'arcade', 'device'];
 
 export interface Game {
 	slug: string;
@@ -87,7 +95,12 @@ export interface Game {
 	platform?: string;
 	/** The colour its screen throws into the room, as #rrggbb. */
 	accent?: string;
-	release: Release;
+	/**
+	 * The release the site serves. Absent while a game is registered but not yet released:
+	 * it is then neither listed nor built, and its first release ping fills this in (with
+	 * the build's and cover's hashes) like any later one.
+	 */
+	release?: Release;
 	web?: Web;
 	cover?: Cover;
 	links?: Link[];
@@ -104,11 +117,15 @@ export const COVER_PATH = /^(?!\/)(?!.*(^|\/)\.\.(\/|$))[\w./-]+\.(png|jpe?g|web
 export const fill = (template: string, version: string) =>
 	template.replaceAll('{version}', version);
 
+/** A game with a release: the only kind the site lists, builds and serves. */
+export type Released = Game & { release: Release };
+export const isReleased = (game: Game): game is Released => game.release !== undefined;
+
 /** The release asset name of a web build at its current version. */
-export const webAsset = (game: Game) => game.web && fill(game.web.asset, game.release.version);
+export const webAsset = (game: Released) => game.web && fill(game.web.asset, game.release.version);
 
 /** Where a web build is served, relative to the site root, without a leading slash. */
-export const buildPath = (game: Game) =>
+export const buildPath = (game: Released) =>
 	`builds/${game.slug}/${game.release.version}/${game.web?.entry ?? 'index.html'}`;
 
 /** Options as a query string for a framed game: `{ cracktro: true, gfx: 'ega' }` → `cracktro&gfx=ega`. */
@@ -121,7 +138,7 @@ export const toQuery = (options: Options = {}) =>
 /** Where a game's cover is served: named by its hash, so it can be cached forever. */
 export const coverPath = (game: Game) => {
 	const c = game.cover;
-	if (!c) return undefined;
+	if (!c?.sha256) return undefined;
 	const ext = c.path.slice(c.path.lastIndexOf('.')).toLowerCase();
 	return `covers/${game.slug}-${c.sha256.slice(0, 16)}${ext}`;
 };
@@ -143,8 +160,7 @@ export function validate(value: unknown, where: string): Game {
 	str(g.title, 'title');
 	str(g.tagline, 'tagline');
 	str(g.repo, 'repo', REPO);
-	if (g.release === undefined) errors.push('release: missing');
-	else {
+	if (g.release !== undefined) {
 		str(g.release.version, 'release.version', VERSION);
 		str(g.release.date, 'release.date');
 		str(g.release.url, 'release.url');
@@ -155,7 +171,10 @@ export function validate(value: unknown, where: string): Game {
 	if (g.accent !== undefined) str(g.accent, 'accent', HEX);
 	if (g.web !== undefined) {
 		str(g.web.asset, 'web.asset');
-		str(g.web.sha256, 'web.sha256', SHA256);
+		if (g.web.sha256 !== undefined || g.release !== undefined) {
+			str(g.web.sha256, 'web.sha256', SHA256);
+		}
+		if (g.web.assets !== undefined) str(g.web.assets, 'web.assets', /^[\w.-]+(\/[\w.-]+)*$/);
 		if (g.web.module !== undefined) str(g.web.module, 'web.module', /^[\w.-]+\.js$/);
 		if (g.web.canvas !== undefined) str(g.web.canvas, 'web.canvas', /^[A-Za-z][\w-]*$/);
 		if ((g.web.module === undefined) !== (g.web.canvas === undefined)) {
@@ -190,7 +209,9 @@ export function validate(value: unknown, where: string): Game {
 	}
 	if (g.cover !== undefined) {
 		str(g.cover.path, 'cover.path', COVER_PATH);
-		str(g.cover.sha256, 'cover.sha256', SHA256);
+		if (g.cover.sha256 !== undefined || g.release !== undefined) {
+			str(g.cover.sha256, 'cover.sha256', SHA256);
+		}
 		str(g.cover.alt, 'cover.alt');
 	}
 	for (const [i, l] of (g.links ?? []).entries()) {
@@ -202,7 +223,7 @@ export function validate(value: unknown, where: string): Game {
 }
 
 /** Index order: `order` ascending, then newest release first. */
-export function byOrder(a: Game, b: Game) {
+export function byOrder(a: Released, b: Released) {
 	return (
 		(a.order ?? Infinity) - (b.order ?? Infinity) ||
 		b.release.date.localeCompare(a.release.date) ||

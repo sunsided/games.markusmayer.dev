@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { Game } from '#lib/registry.js';
+	import type { Released } from '#lib/registry.js';
 	import CrtScreen from '../molecules/CrtScreen.svelte';
 	import ArcadeCabinet from './ArcadeCabinet.svelte';
+	import DeviceStand from './DeviceStand.svelte';
 	import PcMonitor from './PcMonitor.svelte';
 
 	/**
@@ -17,7 +18,7 @@
 		children,
 		front
 	}: {
-		game: Game;
+		game: Released;
 		power?: boolean;
 		delay?: number;
 		live?: boolean;
@@ -33,7 +34,10 @@
 	{#snippet tube()}
 		<CrtScreen {aspect} {power} {delay} {live} {front}>{@render children()}</CrtScreen>
 	{/snippet}
-	{#if game.frame === 'arcade'}
+	{#snippet face()}{@render children()}{/snippet}
+	{#if game.frame === 'device'}
+		<DeviceStand {aspect} screen={face} {front} />
+	{:else if game.frame === 'arcade'}
 		<ArcadeCabinet title={game.title} screen={tube} />
 	{:else}
 		<PcMonitor on={live} screen={tube} />

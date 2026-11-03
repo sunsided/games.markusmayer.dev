@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Game } from '#lib/registry.js';
+	import type { Released } from '#lib/registry.js';
 	import { releaseDate } from '#lib/format.js';
 
 	/**
@@ -7,7 +7,7 @@
 	 * release is standing there. `href` makes the title the machine's link, stretched over
 	 * the whole exhibit by the parent.
 	 */
-	let { game, href }: { game: Game; href?: string } = $props();
+	let { game, href }: { game: Released; href?: string } = $props();
 </script>
 
 <div class="plaque">
