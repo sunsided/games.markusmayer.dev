@@ -6,7 +6,9 @@
 // Only repositories already in games/*.json are accepted: the registry is the allowlist,
 // and onboarding a game is a hand-written games/<slug>.json. The release must be published
 // (not a draft or prerelease), and for a web game its zip must match the line in the
-// release's SHA256SUMS and carry a build-provenance attestation from that repository.
+// release's SHA256SUMS and carry a build-provenance attestation from that repository,
+// and hold only regular files and folders (no symlinks, no paths leaving the folder; see
+// checkZip).
 // Older tags than the one pinned are refused unless --force.
 //
 // Writes slug, version and changed to $GITHUB_OUTPUT when set.
@@ -16,7 +18,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { REPO, VERSION, compareVersions, fill, validate } from '../src/lib/registry.ts';
-import { download, gameFile, githubApi, loadGames, run, sha256, verifyProvenance } from './lib.ts';
+import {
+	checkZip,
+	download,
+	gameFile,
+	githubApi,
+	loadGames,
+	sha256,
+	verifyProvenance
+} from './lib.ts';
 
 interface GhRelease {
 	tag_name: string;
@@ -96,9 +106,7 @@ if (game.web) {
 	if (actual !== pinned) throw new Error(`${name}: SHA-256 ${actual} ≠ SHA256SUMS ${pinned}`);
 	if (game.web.attest !== false) verifyProvenance(zip, game.repo);
 
-	const entry = game.web.entry ?? 'index.html';
-	const listing = run('unzip', ['-Z1', zip], { quiet: true }).split('\n');
-	if (!listing.includes(entry)) throw new Error(`${name} has no ${entry} at its root`);
+	checkZip(zip, game.web.entry ?? 'index.html');
 
 	next.web = { ...game.web, sha256: pinned };
 }

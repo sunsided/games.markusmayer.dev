@@ -5,10 +5,27 @@
 //
 //   node scripts/fetch-builds.ts [slug...]
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync
+} from 'node:fs';
 import { join } from 'node:path';
 import { webAsset } from '../src/lib/registry.ts';
-import { ROOT, download, loadGames, run, sha256, verifyProvenance } from './lib.ts';
+import {
+	ROOT,
+	assertPlainTree,
+	checkZip,
+	download,
+	loadGames,
+	run,
+	sha256,
+	verifyProvenance
+} from './lib.ts';
 
 const only = new Set(process.argv.slice(2));
 const games = loadGames().filter((g) => g.web && (only.size === 0 || only.has(g.slug)));
@@ -44,11 +61,15 @@ for (const game of games) {
 		throw new Error(`${game.slug}: ${asset} has SHA-256 ${actual}, registry pins ${web.sha256}`);
 	}
 	if (web.attest !== false) verifyProvenance(zip, game.repo);
+	checkZip(zip, entry);
 
 	for (const v of existsSync(base) ? readdirSync(base) : [])
 		rmSync(join(base, v), { recursive: true });
 	mkdirSync(dest, { recursive: true });
 	run('unzip', ['-q', '-o', zip, '-x', '.trunk-lock', '-d', dest]);
-	if (!existsSync(join(dest, entry))) throw new Error(`${game.slug}: ${asset} has no ${entry}`);
+	assertPlainTree(dest);
+	if (!statSync(join(dest, entry), { throwIfNoEntry: false })?.isFile()) {
+		throw new Error(`${game.slug}: ${entry} missing after unpacking ${asset}`);
+	}
 	writeFileSync(join(dest, 'VERSION'), `${stamp}\n`);
 }
