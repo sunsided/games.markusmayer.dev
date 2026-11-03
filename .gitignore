@@ -1,0 +1,16 @@
+node_modules
+.yarn/install-state.gz
+.task
+
+# Output
+/.svelte-kit
+/build
+
+# The games' web builds, fetched from their releases by `task builds`.
+/.cache/
+/static/builds/
+
+.DS_Store
+.env
+.env.*
+vite.config.ts.timestamp-*

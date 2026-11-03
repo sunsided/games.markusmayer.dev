@@ -1,0 +1,38 @@
+name: Set up the toolchain
+description: Node from .nvmrc, Task, Yarn 4 through Corepack, installed dependencies, cached game builds.
+
+runs:
+  using: composite
+  steps:
+    # package-manager-cache off: it would call the runner's Yarn 1 before Corepack is on.
+    - uses: actions/setup-node@v5
+      with:
+        node-version-file: .nvmrc
+        package-manager-cache: false
+
+    - uses: arduino/setup-task@v2
+      with:
+        version: 3.x
+        repo-token: ${{ github.token }}
+
+    - run: corepack enable
+      shell: bash
+
+    - name: Cache Yarn downloads
+      uses: actions/cache@v4
+      with:
+        path: ~/.yarn/berry/cache
+        key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+        restore-keys: yarn-${{ runner.os }}-
+
+    - run: yarn install --immutable
+      shell: bash
+
+    # Release zips, keyed on the registry: a pin change is a cache miss for that game only
+    # in effect, since fetch-builds skips zips whose SHA-256 already matches.
+    - name: Cache the game releases
+      uses: actions/cache@v4
+      with:
+        path: .cache
+        key: games-${{ hashFiles('games/*.json') }}
+        restore-keys: games-

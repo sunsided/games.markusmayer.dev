@@ -1,0 +1,80 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://games.markusmayer.dev/games/schema.json",
+	"title": "Game registry entry",
+	"description": "One game on games.markusmayer.dev. Editorial fields are written by hand; `release` and `web.sha256` are rewritten by scripts/sync-game.ts when the game's repository announces a release.",
+	"type": "object",
+	"required": ["slug", "title", "tagline", "repo", "release"],
+	"additionalProperties": false,
+	"properties": {
+		"$schema": { "type": "string" },
+		"slug": {
+			"description": "URL segment and build folder. Must equal the file name without .json.",
+			"type": "string",
+			"pattern": "^[a-z0-9][a-z0-9-]*$"
+		},
+		"title": { "type": "string" },
+		"tagline": { "type": "string" },
+		"description": { "type": "string" },
+		"repo": {
+			"description": "GitHub owner/name. Only releases from this repository are accepted for this entry.",
+			"type": "string",
+			"pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+		},
+		"tags": { "type": "array", "items": { "type": "string" } },
+		"order": {
+			"description": "Sort key on the index page; lower first. Ties sort by release date, newest first.",
+			"type": "integer"
+		},
+		"hidden": { "description": "Registered but not listed.", "type": "boolean" },
+		"release": {
+			"type": "object",
+			"required": ["version", "date", "url"],
+			"additionalProperties": false,
+			"properties": {
+				"version": { "type": "string", "pattern": "^v?\\d+\\.\\d+\\.\\d+([-+][0-9A-Za-z.-]+)?$" },
+				"date": { "type": "string", "format": "date-time" },
+				"url": { "type": "string", "format": "uri" }
+			}
+		},
+		"web": {
+			"description": "Present for games that run in the browser. The release asset is a zip with an index.html using relative paths; it is self-hosted under /builds/<slug>/<version>/ and framed by /<slug>/.",
+			"type": "object",
+			"required": ["asset", "sha256"],
+			"additionalProperties": false,
+			"properties": {
+				"asset": {
+					"description": "Release asset name; {version} is replaced by the tag.",
+					"type": "string"
+				},
+				"sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+				"entry": { "type": "string", "default": "index.html" },
+				"aspect": {
+					"description": "CSS aspect-ratio of the play frame, e.g. \"16 / 10\".",
+					"type": "string"
+				},
+				"attest": {
+					"description": "Require a GitHub build-provenance attestation for the zip.",
+					"type": "boolean",
+					"default": true
+				}
+			}
+		},
+		"links": {
+			"description": "Extra links: downloads, store pages, source. A game without `web` is played through these.",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["label", "url"],
+				"additionalProperties": false,
+				"properties": {
+					"label": { "type": "string" },
+					"url": {
+						"description": "{version} is replaced by the current release tag.",
+						"type": "string"
+					}
+				}
+			}
+		}
+	}
+}

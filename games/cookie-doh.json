@@ -1,0 +1,21 @@
+{
+	"$schema": "./schema.json",
+	"slug": "cookie-doh",
+	"title": "Cookie D'oh!",
+	"tagline": "Accept all Cookies.",
+	"description": "A silly C64/Amiga-era arcade game in Rust, built on game-toolkit.",
+	"repo": "sunsided/cookie-doh",
+	"tags": ["arcade", "rust", "wasm"],
+	"order": 20,
+	"release": {
+		"version": "v0.2.2",
+		"date": "2026-11-02T15:38:54Z",
+		"url": "https://github.com/sunsided/cookie-doh/releases/tag/v0.2.2"
+	},
+	"web": {
+		"asset": "cookie-doh-{version}-web.zip",
+		"sha256": "2e7febeeb3d3ff158761c346610c28b19ff0125da19fe4a0e1a70368f1795808",
+		"aspect": "16 / 10"
+	},
+	"links": [{ "label": "Source", "url": "https://github.com/sunsided/cookie-doh" }]
+}
