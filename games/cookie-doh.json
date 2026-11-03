@@ -17,5 +17,15 @@
 		"sha256": "2e7febeeb3d3ff158761c346610c28b19ff0125da19fe4a0e1a70368f1795808",
 		"aspect": "16 / 10"
 	},
-	"links": [{ "label": "Source", "url": "https://github.com/sunsided/cookie-doh" }]
+	"cover": {
+		"path": "docs/screenshots/title.png",
+		"sha256": "1fca921820532768fa3a8059fd5756826ce544004beeb0a34fc779cb21a629c6",
+		"alt": "Cookie D'oh! title screen: a marquee reading Accept All Cookies over a cookie conveyor, with a cookie consent banner offering Accept All and a greyed-out Reject."
+	},
+	"links": [
+		{
+			"label": "Source",
+			"url": "https://github.com/sunsided/cookie-doh"
+		}
+	]
 }

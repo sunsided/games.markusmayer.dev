@@ -3,6 +3,9 @@
 // per version, so a cached page never mixes two releases. Other versions' folders are
 // removed locally; the bucket keeps them (see `deploy:upload`).
 //
+// And every cover into static/covers/<slug>-<hash>.<ext>, read from the game repository at
+// the pinned tag and checked against its pinned SHA-256.
+//
 //   node scripts/fetch-builds.ts [slug...]
 
 import {
@@ -15,10 +18,11 @@ import {
 	writeFileSync
 } from 'node:fs';
 import { join } from 'node:path';
-import { webAsset } from '../src/lib/registry.ts';
+import { coverPath, coverSource, webAsset, type Game } from '../src/lib/registry.ts';
 import {
 	ROOT,
 	assertPlainTree,
+	checkImage,
 	checkZip,
 	download,
 	loadGames,
@@ -28,10 +32,40 @@ import {
 } from './lib.ts';
 
 const only = new Set(process.argv.slice(2));
-const games = loadGames().filter((g) => g.web && (only.size === 0 || only.has(g.slug)));
+const games = loadGames().filter((g) => only.size === 0 || only.has(g.slug));
+
+// Covers first: small, and a page without its build still wants its card.
+const coversDir = join(ROOT, 'static', 'covers');
+mkdirSync(coversDir, { recursive: true });
+const wanted = new Set(
+	games
+		.map(coverPath)
+		.filter(Boolean)
+		.map((p) => p!.replace('covers/', ''))
+);
+if (only.size === 0) {
+	for (const f of readdirSync(coversDir)) if (!wanted.has(f)) rmSync(join(coversDir, f));
+}
+for (const game of games) await fetchCover(game);
+
+async function fetchCover(game: Game) {
+	const cover = game.cover;
+	if (!cover) return;
+	const dest = join(ROOT, 'static', coverPath(game)!);
+	if (existsSync(dest) && sha256(dest) === cover.sha256) return;
+	console.log(`${game.slug}: fetching cover ${cover.path}`);
+	await download(coverSource(game.repo, game.release.version, cover.path), dest);
+	const actual = sha256(dest);
+	if (actual !== cover.sha256) {
+		rmSync(dest);
+		throw new Error(`${game.slug}: cover has SHA-256 ${actual}, registry pins ${cover.sha256}`);
+	}
+	checkImage(dest, cover.path);
+}
 
 for (const game of games) {
-	const web = game.web!;
+	if (!game.web) continue;
+	const web = game.web;
 	const version = game.release.version;
 	const asset = webAsset(game)!;
 	const stamp = `${version} ${web.sha256}`;

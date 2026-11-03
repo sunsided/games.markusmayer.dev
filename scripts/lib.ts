@@ -101,6 +101,25 @@ export function assertPlainTree(dir: string) {
 	}
 }
 
+/**
+ * The file really is the raster image its name says: checked by magic bytes, so a cover
+ * cannot smuggle HTML or SVG onto the site under an image's name.
+ */
+export function checkImage(file: string, name: string) {
+	const head = readFileSync(file).subarray(0, 12);
+	const ext = name.slice(name.lastIndexOf('.') + 1).toLowerCase();
+	const is = (bytes: number[], at = 0) => bytes.every((b, i) => head[at + i] === b);
+	const ok: Record<string, boolean> = {
+		png: is([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+		jpg: is([0xff, 0xd8, 0xff]),
+		jpeg: is([0xff, 0xd8, 0xff]),
+		gif: is([0x47, 0x49, 0x46, 0x38]),
+		webp: is([0x52, 0x49, 0x46, 0x46]) && is([0x57, 0x45, 0x42, 0x50], 8),
+		avif: is([0x66, 0x74, 0x79, 0x70], 4)
+	};
+	if (!ok[ext]) throw new Error(`${name}: not a ${ext.toUpperCase()} image`);
+}
+
 export async function download(url: string, dest: string) {
 	const { writeFile } = await import('node:fs/promises');
 	const res = await fetch(url, { redirect: 'follow' });

@@ -9,6 +9,7 @@ node_modules
 # The games' web builds, fetched from their releases by `task builds`.
 /.cache/
 /static/builds/
+/static/covers/
 
 .DS_Store
 .env

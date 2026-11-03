@@ -1,6 +1,11 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import { listed } from '#lib/games.js';
+	import { coverPath } from '#lib/registry.js';
+
+	// Fetched by `task builds`, so not a static file the type of asset() knows at check time.
+	type Asset = Parameters<typeof asset>[0];
+	const cover = (path: string) => asset(path as Asset);
 
 	const date = (iso: string) =>
 		new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -23,7 +28,12 @@
 	{#each listed as game (game.slug)}
 		<li>
 			<a class="card" href={`${resolve('/[slug]', { slug: game.slug })}/`}>
-				<span class="marquee" aria-hidden="true">{game.title}</span>
+				{#if game.cover}
+					<!-- The title follows as text, so the art is decoration here. -->
+					<img class="marquee cover" src={cover(coverPath(game)!)} alt="" loading="lazy" />
+				{:else}
+					<span class="marquee" aria-hidden="true">{game.title}</span>
+				{/if}
 				<span class="body">
 					<span class="title">{game.title}</span>
 					<span class="tagline">{game.tagline}</span>
@@ -95,6 +105,15 @@
 			repeating-linear-gradient(0deg, #0003 0 2px, transparent 2px 4px),
 			radial-gradient(ellipse at center, #1d2530, #07090b 75%);
 		border-bottom: 1px solid var(--line);
+	}
+	/* Title art is pixel art at a multiple of its screen: keep the pixels square and sharp. */
+	.cover {
+		display: block;
+		width: 100%;
+		padding: 0;
+		object-fit: cover;
+		image-rendering: pixelated;
+		background: #000;
 	}
 	.body {
 		display: flex;

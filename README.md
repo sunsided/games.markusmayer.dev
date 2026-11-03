@@ -35,6 +35,12 @@ with the current tag.
   framed by `/<slug>/`. Old versions stay in the bucket, immutable.
 - **Anything else**: leave out `web`, give `links` (download, store page, itch.io…). It
   gets a card and a page with those links.
+- **Title card** (optional `cover`): a PNG, JPEG, WebP, GIF or AVIF from the game's
+  repository, read at the release tag (`"path": "docs/screenshots/title.png"`) and pinned by
+  SHA-256 like the build; each release sync re-pins it. It is the card's art, the game
+  page's click-to-play poster (so the wasm only loads on Play) and the `og:image`. Served
+  as `/covers/<slug>-<hash>.<ext>`. `alt` is required; `credit` is shown under the poster.
+  Without a cover the card shows the title on a CRT-style backdrop.
 
 ## Adding a game
 
