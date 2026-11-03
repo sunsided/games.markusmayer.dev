@@ -205,6 +205,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sunsided/web-visual-fx@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@sunsided/web-visual-fx@npm:1.1.0"
+  peerDependencies:
+    svelte: ^5.0.0
+  peerDependenciesMeta:
+    svelte:
+      optional: true
+  checksum: 10c0/bb07118465a16338dc939d15fb5b88df58b9906211a776925588973946c550178f466c065b261bd440b1aec7eaf900c01889bc6419e932be83e1bbcffa7b4a0d
+  languageName: node
+  linkType: hard
+
 "@sveltejs/acorn-typescript@npm:^1.0.13":
   version: 1.0.13
   resolution: "@sveltejs/acorn-typescript@npm:1.0.13"
@@ -443,6 +455,7 @@ __metadata:
   dependencies:
     "@fontsource-variable/archivo": "npm:^5.3.0"
     "@fontsource/silkscreen": "npm:^5.3.0"
+    "@sunsided/web-visual-fx": "npm:^1.1.0"
     "@sveltejs/adapter-static": "npm:^4.0.0"
     "@sveltejs/kit": "npm:^3.1.0"
     "@sveltejs/vite-plugin-svelte": "npm:^7.3.0"

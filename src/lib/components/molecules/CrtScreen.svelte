@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { liquidGlass } from '@sunsided/web-visual-fx';
+	import { LensFilter } from '@sunsided/web-visual-fx/svelte';
 	import type { Snippet } from 'svelte';
 
 	/**
@@ -22,14 +24,107 @@
 		live?: boolean;
 		children: Snippet;
 	} = $props();
+
+	const uid = $props.id();
+	let tube: HTMLDivElement | undefined = $state();
+	let w = $state(0);
+	let h = $state(0);
+
+	/*
+		The bulge. A CRT's face is convex, so the picture bends toward its edges. web-visual-fx's
+		liquid glass computes exactly that kind of displacement for a curved bezel; applied to
+		the picture rather than the backdrop, it bends the image the way the tube does, with a
+		touch of colour fringe at the rim. Not while a game runs: it would distort play and
+		misplace clicks, and the games bring their own curvature.
+	*/
+	const lens = $derived.by(() => {
+		if (!w || !h || typeof document === 'undefined') return undefined;
+		const short = Math.min(w, h);
+		const shape = {
+			width: Math.round(w),
+			height: Math.round(h),
+			radius: short * 0.08,
+			bezel: short * 0.2,
+			profile: 'circle' as const
+		};
+		const canvas = document.createElement('canvas');
+		canvas.width = shape.width;
+		canvas.height = shape.height;
+		const data = liquidGlass.displacementMap(shape);
+		canvas.getContext('2d')?.putImageData(new ImageData(data, shape.width, shape.height), 0, 0);
+		return { ...shape, map: canvas.toDataURL('image/png'), refraction: short * 0.035 };
+	});
+
+	/*
+		The glare on the glass, as on markusmayer.dev's CRT: a soft highlight where the mouse is
+		and a faint foil sheen that turns with it. Only for a mouse, only over the tube, and
+		not while playing. Watched from the window, since on the showroom floor the exhibit's
+		link lies over the whole machine and the tube itself never sees the pointer.
+	*/
+	let lit = $state(false);
+	let glare = $state({ x: 50, y: 30, turn: 0 });
+	$effect(() => {
+		if (!tube || live || !matchMedia('(hover: hover)').matches) {
+			lit = false;
+			return;
+		}
+		let frame = 0;
+		const move = (e: PointerEvent) => {
+			if (e.pointerType !== 'mouse' || frame) return;
+			frame = requestAnimationFrame(() => {
+				frame = 0;
+				const r = tube!.getBoundingClientRect();
+				const x = (e.clientX - r.left) / r.width;
+				const y = (e.clientY - r.top) / r.height;
+				lit = x >= 0 && x <= 1 && y >= 0 && y <= 1;
+				if (lit) glare = { x: x * 100, y: y * 100, turn: Math.atan2(y - 0.5, x - 0.5) };
+			});
+		};
+		const leave = () => (lit = false);
+		window.addEventListener('pointermove', move, { passive: true });
+		document.documentElement.addEventListener('pointerleave', leave);
+		return () => {
+			cancelAnimationFrame(frame);
+			window.removeEventListener('pointermove', move);
+			document.documentElement.removeEventListener('pointerleave', leave);
+		};
+	});
 </script>
 
-<div class="crt" class:live style:aspect-ratio={aspect}>
+<div
+	class="crt"
+	class:live
+	class:lit
+	style:aspect-ratio={aspect}
+	style:--gx={`${glare.x}%`}
+	style:--gy={`${glare.y}%`}
+	style:--turn={`${glare.turn}rad`}
+	bind:this={tube}
+	bind:clientWidth={w}
+	bind:clientHeight={h}
+>
 	<div class="picture" class:power style:--delay={`${delay}ms`}>
-		{@render children()}
+		<div class="lens" style:filter={lens && !live ? `url(#${uid}-bulge)` : undefined}>
+			{@render children()}
+		</div>
 	</div>
 	<div class="mask" aria-hidden="true"></div>
 	<div class="glass" aria-hidden="true"></div>
+	<div class="glare" aria-hidden="true"></div>
+	{#if lens}
+		<svg class="defs" width="0" height="0" aria-hidden="true">
+			<LensFilter
+				id={`${uid}-bulge`}
+				width={lens.width}
+				height={lens.height}
+				map={lens.map}
+				refraction={lens.refraction}
+				fringe={0.18}
+				bezel={lens.bezel}
+				specular={0}
+			/>
+		</svg>
+	{/if}
 </div>
 
 <style>
@@ -51,9 +146,21 @@
 		inset: 0;
 		transform-origin: 50% 50%;
 	}
-	.picture > :global(*) {
+	/* The bulge's filter sits here, inside the picture: the switch-on animation's own filter
+	   on .picture would otherwise replace it, and keep replacing it once it has ended. */
+	.lens {
+		position: absolute;
+		inset: 0;
+	}
+	.lens > :global(*) {
 		inline-size: 100%;
 		block-size: 100%;
+	}
+	.defs {
+		position: absolute;
+		inline-size: 0;
+		block-size: 0;
+		overflow: hidden;
 	}
 
 	/* Scanlines and an aperture-grille mask, multiplied over the picture. */
@@ -99,6 +206,36 @@
 		background:
 			radial-gradient(130% 120% at 50% 50%, transparent 75%, rgb(0 0 0 / 0.35) 100%),
 			linear-gradient(155deg, rgb(255 255 255 / 0.06) 0%, transparent 30%);
+	}
+
+	/* The glare, lit while the mouse is over the glass. */
+	.glare {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		border-radius: inherit;
+		opacity: 0;
+		background:
+			radial-gradient(
+				circle at var(--gx) var(--gy),
+				rgb(255 255 255 / 0.34) 0%,
+				rgb(255 255 255 / 0.12) 16%,
+				rgb(255 255 255 / 0.03) 32%,
+				transparent 50%
+			),
+			conic-gradient(
+				from var(--turn) at 50% 50%,
+				rgb(255 120 200 / 0.13),
+				rgb(120 200 255 / 0.13),
+				rgb(160 255 170 / 0.11),
+				rgb(255 230 120 / 0.13),
+				rgb(255 120 200 / 0.13)
+			);
+		mix-blend-mode: screen;
+		transition: opacity var(--dur-mid) var(--ease-out);
+	}
+	.lit .glare {
+		opacity: 1;
 	}
 
 	/*
