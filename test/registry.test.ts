@@ -23,3 +23,19 @@ test('compareVersions orders tags', () => {
 test('fill replaces every {version}', () => {
 	assert.equal(fill('x-{version}/y-{version}', 'v1.0.0'), 'x-v1.0.0/y-v1.0.0');
 });
+
+test('checkZip refuses symlinks and accepts a plain build', async () => {
+	const { execFileSync } = await import('node:child_process');
+	const { mkdtempSync, symlinkSync, writeFileSync } = await import('node:fs');
+	const { tmpdir } = await import('node:os');
+	const { join } = await import('node:path');
+	const { checkZip } = await import('../scripts/lib.ts');
+	const dir = mkdtempSync(join(tmpdir(), 'zip-'));
+	writeFileSync(join(dir, 'index.html'), '<!doctype html>');
+	symlinkSync('/etc/passwd', join(dir, 'leak'));
+	execFileSync('zip', ['-q', '-y', 'ok.zip', 'index.html'], { cwd: dir });
+	execFileSync('zip', ['-q', '-y', 'bad.zip', 'index.html', 'leak'], { cwd: dir });
+	assert.deepEqual(checkZip(join(dir, 'ok.zip'), 'index.html'), ['index.html']);
+	assert.throws(() => checkZip(join(dir, 'bad.zip'), 'index.html'), /unsafe entries: leak/);
+	assert.throws(() => checkZip(join(dir, 'ok.zip'), 'play.html'), /no play.html/);
+});
