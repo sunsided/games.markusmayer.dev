@@ -16,11 +16,8 @@
 </svelte:head>
 
 <section class="intro">
-	<h1>Pick a machine. Press Play.</h1>
-	<p class="lede">
-		Small, silly games in the clothes of DOS PCs, arcade cabinets and LCD handhelds. Pick one and it
-		runs right here in your browser, nothing to install.
-	</p>
+	<h1>Brand-new old games.</h1>
+	<p class="lede">Cheese, cookies, and eggs, served on period hardware.</p>
 </section>
 
 <section class="room" aria-labelledby="floor-title">

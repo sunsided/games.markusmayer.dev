@@ -3,10 +3,6 @@
 </script>
 
 <footer class="site-footer">
-	<p class="provenance">
-		Every game here runs the exact build its repository released. The build is pinned by its SHA-256
-		and carries a GitHub build attestation from that repository.
-	</p>
 	<div class="side">
 		<p class="more">
 			More of my work, and the writing, at <a href={LINKS.home}>markusmayer.dev</a>.
@@ -31,9 +27,6 @@
 		font-size: var(--step--1);
 		color: var(--color-text-muted);
 	}
-	.provenance {
-		max-inline-size: 52ch;
-	}
 	.side {
 		display: grid;
 		gap: var(--space-3);
@@ -41,6 +34,7 @@
 	}
 	@media (min-width: 48rem) {
 		.side {
+			margin-inline-start: auto;
 			justify-items: end;
 			text-align: end;
 		}

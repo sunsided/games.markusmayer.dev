@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import Button from '#lib/components/atoms/Button.svelte';
-	import Hash from '#lib/components/atoms/Hash.svelte';
 	import Led from '#lib/components/atoms/Led.svelte';
 	import PlayKey from '#lib/components/molecules/PlayKey.svelte';
 	import SpecList, { type Spec } from '#lib/components/molecules/SpecList.svelte';
@@ -42,17 +41,12 @@
 		...(game.platform ? [{ term: 'Styled on', detail: game.platform }] : []),
 		{ term: 'Release', detail: release },
 		{ term: 'Released', detail: releaseDate(game.release.date) },
-		...(game.web ? [{ term: 'Build', detail: build }] : []),
 		{ term: 'Source', detail: source }
 	]);
 </script>
 
 {#snippet release()}
 	<a href={game.release.url}>{game.release.version}</a>
-{/snippet}
-{#snippet build()}
-	<Hash value={game.web!.sha256!} />, attested by
-	<a href={`https://github.com/${game.repo}/attestations`}>GitHub</a>
 {/snippet}
 {#snippet source()}
 	<a href={`https://github.com/${game.repo}`}>{game.repo}</a>
