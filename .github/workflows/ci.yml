@@ -1,0 +1,30 @@
+name: CI
+
+# `task ci`: lint, type check, registry tests, build (which fetches and verifies every
+# pinned game build). The `ci` check is what branch protection requires, and what the
+# release bot's auto-merge waits for.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - run: task ci
+        # `gh attestation verify` checks the games' build provenance with it.
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,30 @@
+{
+	"$schema": "./schema.json",
+	"slug": "cheesed",
+	"title": "Cheesed!",
+	"tagline": "The Mouse. The Cheese. The Destiny.",
+	"description": "A thrilling action adventure in DOS-era dress. Rust, native and WebAssembly.",
+	"repo": "sunsided/cheesed",
+	"tags": ["action", "dos", "rust", "wasm"],
+	"order": 10,
+	"release": {
+		"version": "v0.1.2",
+		"date": "2026-11-02T15:38:11Z",
+		"url": "https://github.com/sunsided/cheesed/releases/tag/v0.1.2"
+	},
+	"web": {
+		"asset": "cheesed-{version}-web.zip",
+		"sha256": "8b0240e10dea516ee1f059a6a6d739f843c45b830a39b43de46643988eda8797",
+		"aspect": "16 / 10"
+	},
+	"links": [
+		{
+			"label": "Linux binary",
+			"url": "https://github.com/sunsided/cheesed/releases/download/{version}/cheesed-{version}-linux-x86_64.tar.gz"
+		},
+		{
+			"label": "Source",
+			"url": "https://github.com/sunsided/cheesed"
+		}
+	]
+}

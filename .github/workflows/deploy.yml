@@ -1,0 +1,53 @@
+name: Deploy
+
+# Every push to main is a deploy: a merged registry bump from a game release is the thing
+# this site exists to publish, so there is no separate tag step. See README "Deploying"
+# for the one-time GCP setup.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md', 'docs/**']
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC token for Workload Identity Federation
+    environment:
+      name: production
+      url: https://games.markusmayer.dev
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+
+      # Nothing is published that has not passed all of it.
+      - run: task ci
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Publish to Cloud Storage
+        run: task deploy:upload --yes BUCKET='${{ vars.GCS_BUCKET }}'
+
+      # Cloud CDN keeps serving the old HTML until told otherwise.
+      - name: Drop the CDN's copy
+        run: >-
+          task deploy:invalidate
+          BUCKET='${{ vars.GCS_BUCKET }}'
+          URL_MAP='${{ vars.GCP_URL_MAP }}'
+          GCP_PROJECT='${{ vars.GCP_PROJECT }}'

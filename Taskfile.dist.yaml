@@ -1,0 +1,135 @@
+version: '3'
+
+vars:
+  RUN: yarn
+  # The site is a static build in build/, served from a Cloud Storage bucket named after the
+  # domain behind a Google load balancer with Cloud CDN, fronted by Cloudflare. Same setup
+  # as markusmayer.dev; see README "Deploying".
+  BUCKET: '{{ .BUCKET | default "games.markusmayer.dev" }}'
+  URL_MAP: '{{ .URL_MAP | default "widemeadows-de" }}'
+  GCP_PROJECT: '{{ .GCP_PROJECT | default "fabled-pivot-392113" }}'
+
+tasks:
+  default:
+    cmds:
+      - task --list --sort=none
+    silent: true
+
+  install:
+    desc: Install dependencies
+    run: once
+    sources: [package.json, yarn.lock, .yarnrc.yml, .nvmrc]
+    generates: [node_modules/.yarn-state.yml]
+    preconditions:
+      - sh: command -v yarn
+        msg: 'yarn not found — install Node 26 (see .nvmrc) and run: corepack enable'
+    cmds:
+      - '{{.RUN}} install {{.CLI_ARGS}}'
+
+  builds:
+    desc: Fetch every registered web build into static/builds/<slug>/<version>/
+    run: once
+    sources: [games/*.json]
+    cmds:
+      - node scripts/fetch-builds.ts {{.CLI_ARGS}}
+
+  dev:
+    desc: Dev server with hot reload
+    deps: [install, builds]
+    cmds:
+      - '{{.RUN}} dev {{.CLI_ARGS}}'
+
+  build:
+    desc: Prerender the static site into build/
+    run: once
+    deps: [install, builds]
+    cmds:
+      - '{{.RUN}} build'
+
+  preview:
+    desc: Serve build/ locally
+    deps: [build]
+    cmds:
+      - '{{.RUN}} preview {{.CLI_ARGS}}'
+
+  lint:
+    desc: Prettier check
+    deps: [install]
+    cmds:
+      - '{{.RUN}} lint'
+
+  check:
+    desc: Type check
+    deps: [install]
+    cmds:
+      - '{{.RUN}} check'
+
+  test:
+    desc: Registry tests (validates every games/*.json)
+    deps: [install]
+    cmds:
+      - '{{.RUN}} test'
+
+  ci:
+    desc: Lint, type check, tests, build
+    cmds:
+      - task: lint
+      - task: check
+      - task: test
+      - task: build
+
+  sync:
+    desc: 'Move a registered game to a release, verified (task sync -- --repo sunsided/cheesed --tag v0.1.3)'
+    deps: [install]
+    cmds:
+      - node scripts/sync-game.ts {{.CLI_ARGS}}
+      - '{{.RUN}} prettier --write games/'
+
+  # --- Deployment -----------------------------------------------------------
+
+  deploy:
+    desc: Run CI, then publish build/ and drop the CDN's copy
+    cmds:
+      - task: ci
+      - task: deploy:upload
+      - task: deploy:invalidate
+
+  deploy:upload:
+    desc: Publish an existing build/ to gs://{{.BUCKET}} (no build, no checks)
+    prompt: 'Publish build/ to gs://{{.BUCKET}}? Objects no longer in build/ are deleted.'
+    preconditions:
+      - sh: command -v gcloud
+        msg: 'gcloud not found — install the Google Cloud SDK'
+      - sh: test -f build/index.html
+        msg: 'build/ is missing — run `task build` first'
+    cmds:
+      # Hashed assets first and never deleted, so no fresh page references a missing file.
+      - >-
+        gcloud storage rsync build/_app/immutable "gs://{{.BUCKET}}/_app/immutable"
+        --recursive
+        --cache-control="public, max-age=31536000, immutable"
+      # A build lives under its release tag, pinned by SHA-256: a path that never changes
+      # what it holds. Never deleted, so a page cached before a release still plays.
+      - >-
+        gcloud storage rsync build/builds "gs://{{.BUCKET}}/builds"
+        --recursive
+        --cache-control="public, max-age=31536000, immutable"
+      - >-
+        gcloud storage rsync build "gs://{{.BUCKET}}"
+        --recursive
+        --delete-unmatched-destination-objects
+        --exclude='^(_app/immutable|builds)/'
+        --cache-control="public, max-age=0, must-revalidate"
+
+  deploy:invalidate:
+    desc: Tell Cloud CDN to drop its copy of the HTML for this host
+    preconditions:
+      - sh: command -v gcloud
+        msg: 'gcloud not found — install the Google Cloud SDK'
+    cmds:
+      - >-
+        gcloud compute url-maps invalidate-cdn-cache {{.URL_MAP}}
+        --project={{.GCP_PROJECT}}
+        --host={{.BUCKET}}
+        --path='/*'
+        --async

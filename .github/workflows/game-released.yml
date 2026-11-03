@@ -1,0 +1,91 @@
+name: Game released
+
+# A game repository announces a release (see announce.yml, which it calls), or someone runs
+# this by hand. The sync script checks the repository is registered, the release is
+# published, and the web zip matches SHA256SUMS and its build-provenance attestation; then
+# the registry bump goes up as a pull request that auto-merges once `ci` passes, and the
+# merge deploys.
+#
+# The PR is opened with the GitHub App's token rather than GITHUB_TOKEN: a PR created by
+# GITHUB_TOKEN does not trigger workflows, so CI would never run and auto-merge would wait
+# forever.
+
+on:
+  repository_dispatch:
+    types: [game-released]
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Game repository (owner/name)'
+        required: true
+      tag:
+        description: 'Release tag'
+        required: true
+      force:
+        description: 'Allow moving to an older tag'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# One sync per game at a time; a newer ping for the same game waits instead of racing.
+concurrency:
+  group: game-released-${{ github.event.client_payload.repo || inputs.repo }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+
+      # Payload values go through env, never straight into the script: they are input from
+      # another repository. sync-game.ts validates their shape and the registry allowlist.
+      - name: Verify the release and update the registry
+        id: sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.event.client_payload.repo || inputs.repo }}
+          TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
+        run: |
+          node scripts/sync-game.ts --repo "$REPO" --tag "$TAG" $FORCE
+          yarn prettier --write games/
+
+      - name: Mint the app token
+        if: steps.sync.outputs.changed == 'true'
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.GAMES_APP_ID }}
+          private-key: ${{ secrets.GAMES_APP_PRIVATE_KEY }}
+
+      - name: Open the pull request
+        if: steps.sync.outputs.changed == 'true'
+        id: pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app.outputs.token }}
+          branch: release/${{ steps.sync.outputs.slug }}
+          delete-branch: true
+          add-paths: games/${{ steps.sync.outputs.slug }}.json
+          commit-message: 'chore(games): ${{ steps.sync.outputs.slug }} ${{ steps.sync.outputs.version }}'
+          title: '${{ steps.sync.outputs.slug }} ${{ steps.sync.outputs.version }}'
+          body: |
+            Release announced by `${{ steps.sync.outputs.repo }}`:
+            ${{ github.server_url }}/${{ steps.sync.outputs.repo }}/releases/tag/${{ steps.sync.outputs.version }}
+
+            Verified before this PR was opened: published release, web zip SHA-256 matches the
+            release's `SHA256SUMS`, GitHub build-provenance attestation from that repository.
+
+            Auto-merges when `ci` passes; the merge deploys.
+          labels: release
+
+      - name: Enable auto-merge
+        if: steps.pr.outputs.pull-request-operation == 'created' || steps.pr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          PR: ${{ steps.pr.outputs.pull-request-number }}
+        run: gh pr merge "$PR" --auto --squash --repo "$GITHUB_REPOSITORY"
