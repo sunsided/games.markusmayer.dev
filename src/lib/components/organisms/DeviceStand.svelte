@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Glare from '../atoms/Glare.svelte';
 
 	/**
 	 * For a game that draws its own hardware, a handheld say: no machine around it, only the
@@ -8,15 +9,17 @@
 	 */
 	let {
 		aspect = '5 / 3',
+		live = false,
 		screen,
 		front
-	}: { aspect?: string; screen: Snippet; front?: Snippet } = $props();
+	}: { aspect?: string; live?: boolean; screen: Snippet; front?: Snippet } = $props();
 </script>
 
 <div class="device">
 	<div class="object" style:aspect-ratio={aspect}>
 		<div class="face">{@render screen()}</div>
 		<div class="sheen" aria-hidden="true"></div>
+		<Glare off={live} />
 		{#if front}<div class="front">{@render front()}</div>{/if}
 	</div>
 	<div class="easel" aria-hidden="true">

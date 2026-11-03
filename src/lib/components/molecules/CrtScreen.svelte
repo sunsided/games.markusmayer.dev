@@ -2,6 +2,7 @@
 	import { liquidGlass } from '@sunsided/web-visual-fx';
 	import { LensFilter } from '@sunsided/web-visual-fx/svelte';
 	import type { Snippet } from 'svelte';
+	import Glare from '../atoms/Glare.svelte';
 
 	/**
 	 * A cathode-ray tube's face: curved glass, scanlines, a phosphor mask, a vignette and the
@@ -29,7 +30,6 @@
 	} = $props();
 
 	const uid = $props.id();
-	let tube: HTMLDivElement | undefined = $state();
 	let w = $state(0);
 	let h = $state(0);
 
@@ -57,55 +57,9 @@
 		canvas.getContext('2d')?.putImageData(new ImageData(data, shape.width, shape.height), 0, 0);
 		return { ...shape, map: canvas.toDataURL('image/png'), refraction: short * 0.04 };
 	});
-
-	/*
-		The glare on the glass, as on markusmayer.dev's CRT: a soft highlight where the mouse is
-		and a faint foil sheen that turns with it. Only for a mouse, only over the tube, and
-		not while playing. Watched from the window, since on the showroom floor the exhibit's
-		link lies over the whole machine and the tube itself never sees the pointer.
-	*/
-	let lit = $state(false);
-	let glare = $state({ x: 50, y: 30, turn: 0 });
-	$effect(() => {
-		if (!tube || live || !matchMedia('(hover: hover)').matches) {
-			lit = false;
-			return;
-		}
-		let frame = 0;
-		const move = (e: PointerEvent) => {
-			if (e.pointerType !== 'mouse' || frame) return;
-			frame = requestAnimationFrame(() => {
-				frame = 0;
-				const r = tube!.getBoundingClientRect();
-				const x = (e.clientX - r.left) / r.width;
-				const y = (e.clientY - r.top) / r.height;
-				lit = x >= 0 && x <= 1 && y >= 0 && y <= 1;
-				if (lit) glare = { x: x * 100, y: y * 100, turn: Math.atan2(y - 0.5, x - 0.5) };
-			});
-		};
-		const leave = () => (lit = false);
-		window.addEventListener('pointermove', move, { passive: true });
-		document.documentElement.addEventListener('pointerleave', leave);
-		return () => {
-			cancelAnimationFrame(frame);
-			window.removeEventListener('pointermove', move);
-			document.documentElement.removeEventListener('pointerleave', leave);
-		};
-	});
 </script>
 
-<div
-	class="crt"
-	class:live
-	class:lit
-	style:aspect-ratio={aspect}
-	style:--gx={`${glare.x}%`}
-	style:--gy={`${glare.y}%`}
-	style:--turn={`${glare.turn}rad`}
-	bind:this={tube}
-	bind:clientWidth={w}
-	bind:clientHeight={h}
->
+<div class="crt" class:live style:aspect-ratio={aspect} bind:clientWidth={w} bind:clientHeight={h}>
 	<div class="picture" class:power style:--delay={`${delay}ms`}>
 		<div class="lens" style:filter={lens && !live ? `url(#${uid}-bulge)` : undefined}>
 			{@render children()}
@@ -113,7 +67,7 @@
 	</div>
 	<div class="mask" aria-hidden="true"></div>
 	<div class="glass" aria-hidden="true"></div>
-	<div class="glare" aria-hidden="true"></div>
+	<Glare off={live} />
 	{#if front}<div class="front">{@render front()}</div>{/if}
 	{#if lens}
 		<svg class="defs" width="0" height="0" aria-hidden="true">
@@ -217,36 +171,6 @@
 		inset: 0;
 		border-radius: inherit;
 		pointer-events: none;
-	}
-
-	/* The glare, lit while the mouse is over the glass. */
-	.glare {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		border-radius: inherit;
-		opacity: 0;
-		background:
-			radial-gradient(
-				circle at var(--gx) var(--gy),
-				rgb(255 255 255 / 0.34) 0%,
-				rgb(255 255 255 / 0.12) 16%,
-				rgb(255 255 255 / 0.03) 32%,
-				transparent 50%
-			),
-			conic-gradient(
-				from var(--turn) at 50% 50%,
-				rgb(255 120 200 / 0.13),
-				rgb(120 200 255 / 0.13),
-				rgb(160 255 170 / 0.11),
-				rgb(255 230 120 / 0.13),
-				rgb(255 120 200 / 0.13)
-			);
-		mix-blend-mode: screen;
-		transition: opacity var(--dur-mid) var(--ease-out);
-	}
-	.lit .glare {
-		opacity: 1;
 	}
 
 	/*

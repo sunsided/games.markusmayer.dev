@@ -36,7 +36,7 @@
 	{/snippet}
 	{#snippet face()}{@render children()}{/snippet}
 	{#if game.frame === 'device'}
-		<DeviceStand {aspect} screen={face} {front} />
+		<DeviceStand {aspect} {live} screen={face} {front} />
 	{:else if game.frame === 'arcade'}
 		<ArcadeCabinet title={game.title} screen={tube} />
 	{:else}
