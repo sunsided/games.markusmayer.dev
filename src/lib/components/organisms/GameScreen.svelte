@@ -16,19 +16,23 @@
 		game,
 		mode = 'still',
 		playing = $bindable(false),
-		frame = $bindable()
+		frame = $bindable(),
+		query
 	}: {
 		game: Game;
 		mode?: 'still' | 'playable';
 		playing?: boolean;
 		frame?: HTMLIFrameElement;
+		/** Launch options instead of the game's default `web.query`; '' for none. */
+		query?: string;
 	} = $props();
 
 	const cover = $derived(game.cover ? asset(coverPath(game)! as Asset) : undefined);
 	const src = $derived.by(() => {
 		if (!game.web) return undefined;
 		const url = asset(buildPath(game) as Asset);
-		return game.web.query ? `${url}?${game.web.query}` : url;
+		const q = query ?? game.web.query;
+		return q ? `${url}?${q}` : url;
 	});
 
 	/*
@@ -68,17 +72,19 @@
 	<div class="view" bind:clientWidth={viewW} bind:clientHeight={viewH}>
 		<!-- Same origin and our own attested build, so no sandbox: the game needs storage,
 		     audio and the GPU like any page would. -->
-		<iframe
-			bind:this={frame}
-			{src}
-			title={`${game.title}, the game`}
-			allow="fullscreen; gamepad; autoplay"
-			allowfullscreen
-			class:fitted={fit}
-			style:inline-size={fit ? `${fit.w}px` : undefined}
-			style:block-size={fit ? `${fit.h}px` : undefined}
-			style:transform={fit ? `scale(${fit.scale})` : undefined}
-		></iframe>
+		{#key src}
+			<iframe
+				bind:this={frame}
+				{src}
+				title={`${game.title}, the game`}
+				allow="fullscreen; gamepad; autoplay"
+				allowfullscreen
+				class:fitted={fit}
+				style:inline-size={fit ? `${fit.w}px` : undefined}
+				style:block-size={fit ? `${fit.h}px` : undefined}
+				style:transform={fit ? `scale(${fit.scale})` : undefined}
+			></iframe>
+		{/key}
 	</div>
 {:else if mode === 'playable' && src}
 	<button type="button" class="poster" onclick={play}>

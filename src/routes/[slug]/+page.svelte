@@ -9,6 +9,7 @@
 	import { releaseDate } from '#lib/format.js';
 	import { coverPath, fill } from '#lib/registry.js';
 	import { ORIGIN } from '#lib/site.js';
+	import { tick } from 'svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -20,6 +21,15 @@
 
 	let playing = $state(false);
 	let frame: HTMLIFrameElement | undefined = $state();
+	/** The launch options of the variant picked below the description, if any. */
+	let query: string | undefined = $state();
+
+	async function launch(q: string) {
+		query = q;
+		playing = true;
+		await tick();
+		frame?.focus();
+	}
 
 	function fullscreen() {
 		frame?.requestFullscreen?.().catch(() => {});
@@ -68,7 +78,7 @@
 	<div class="machine-col">
 		<div class="rig">
 			<Machine {game} power live={playing}>
-				<GameScreen {game} mode="playable" bind:playing bind:frame />
+				<GameScreen {game} mode="playable" {query} bind:playing bind:frame />
 			</Machine>
 			<div class="console">
 				<span class="state">
@@ -92,6 +102,18 @@
 			<p class="hint">Click the game to give it the keyboard.</p>
 		{:else if game.web}
 			<p class="hint">Press Play on the screen to load it, a few megabytes of WebAssembly.</p>
+		{/if}
+		{#if game.web?.variants?.length}
+			<ul class="variants">
+				{#each game.web.variants as v (v.label)}
+					<li>
+						<Button
+							variant={playing && (query ?? game.web.query ?? '') === v.query ? 'primary' : 'quiet'}
+							onclick={() => launch(v.query)}>{v.label}</Button
+						>
+					</li>
+				{/each}
+			</ul>
 		{/if}
 		<SpecList items={specs} />
 		{#if links.length}
@@ -193,6 +215,7 @@
 		font-size: var(--step--1);
 		color: var(--color-text-muted);
 	}
+	.variants,
 	.links {
 		display: flex;
 		flex-wrap: wrap;

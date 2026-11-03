@@ -113,6 +113,24 @@
 					"type": "string",
 					"pattern": "^[\\w.=&-]+$"
 				},
+				"variants": {
+					"description": "Named ways to launch the same build, shown as buttons on the game's page. The default launch is `query`.",
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": ["label", "query"],
+						"additionalProperties": false,
+						"properties": {
+							"label": {
+								"type": "string"
+							},
+							"query": {
+								"type": "string",
+								"pattern": "^[\\w.=&-]*$"
+							}
+						}
+					}
+				},
 				"attest": {
 					"description": "Require a GitHub build-provenance attestation for the zip.",
 					"type": "boolean",

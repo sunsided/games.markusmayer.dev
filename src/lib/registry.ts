@@ -15,6 +15,11 @@ export interface Release {
 	url: string;
 }
 
+export interface Variant {
+	label: string;
+	query: string;
+}
+
 export interface Web {
 	/** Release asset name; `{version}` is replaced by the tag. */
 	asset: string;
@@ -28,6 +33,8 @@ export interface Web {
 	native?: [number, number];
 	/** Launch options for the build, as a query string without `?`, e.g. `cracktro`. */
 	query?: string;
+	/** Named ways to launch the same build, each with its own query (may be empty). */
+	variants?: Variant[];
 	attest?: boolean;
 }
 
@@ -126,6 +133,12 @@ export function validate(value: unknown, where: string): Game {
 		str(g.web.asset, 'web.asset');
 		str(g.web.sha256, 'web.sha256', SHA256);
 		if (g.web.query !== undefined) str(g.web.query, 'web.query', /^[\w.=&-]+$/);
+		for (const [i, v] of (g.web.variants ?? []).entries()) {
+			str(v?.label, `web.variants[${i}].label`);
+			if (typeof v?.query !== 'string' || !/^[\w.=&-]*$/.test(v.query)) {
+				errors.push(`web.variants[${i}].query: expected a query string (may be empty)`);
+			}
+		}
 		const n = g.web.native;
 		if (
 			n !== undefined &&
