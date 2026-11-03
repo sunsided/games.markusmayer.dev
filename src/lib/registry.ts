@@ -21,6 +21,13 @@ export interface Web {
 	sha256: string;
 	entry?: string;
 	aspect?: string;
+	/**
+	 * The game's own screen in pixels, `[width, height]`. Games that scale by whole numbers
+	 * only get their frame at the next whole multiple of this, scaled to fit.
+	 */
+	native?: [number, number];
+	/** Launch options for the build, as a query string without `?`, e.g. `cracktro`. */
+	query?: string;
 	attest?: boolean;
 }
 
@@ -37,6 +44,10 @@ export interface Cover {
 	credit?: string;
 }
 
+/** The hardware a game is shown in, after the era it is styled on. */
+export type Frame = 'pc' | 'arcade';
+export const FRAMES: readonly Frame[] = ['pc', 'arcade'];
+
 export interface Game {
 	slug: string;
 	title: string;
@@ -46,6 +57,12 @@ export interface Game {
 	tags?: string[];
 	order?: number;
 	hidden?: boolean;
+	/** Which machine it stands in on the showroom floor. Defaults to `pc`. */
+	frame?: Frame;
+	/** The era it is styled on, in words, e.g. "DOS PC, VGA 320×200". */
+	platform?: string;
+	/** The colour its screen throws into the room, as #rrggbb. */
+	accent?: string;
 	release: Release;
 	web?: Web;
 	cover?: Cover;
@@ -56,6 +73,7 @@ export const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 export const REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 export const VERSION = /^v?\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?$/;
 export const SHA256 = /^[0-9a-f]{64}$/;
+export const HEX = /^#[0-9a-fA-F]{6}$/;
 /** A relative path in a repository to a raster image. */
 export const COVER_PATH = /^(?!\/)(?!.*(^|\/)\.\.(\/|$))[\w./-]+\.(png|jpe?g|webp|gif|avif)$/i;
 
@@ -100,9 +118,21 @@ export function validate(value: unknown, where: string): Game {
 		str(g.release.date, 'release.date');
 		str(g.release.url, 'release.url');
 	}
+	if (g.frame !== undefined && !FRAMES.includes(g.frame)) {
+		errors.push(`frame: "${g.frame}" is not one of ${FRAMES.join(', ')}`);
+	}
+	if (g.accent !== undefined) str(g.accent, 'accent', HEX);
 	if (g.web !== undefined) {
 		str(g.web.asset, 'web.asset');
 		str(g.web.sha256, 'web.sha256', SHA256);
+		if (g.web.query !== undefined) str(g.web.query, 'web.query', /^[\w.=&-]+$/);
+		const n = g.web.native;
+		if (
+			n !== undefined &&
+			!(Array.isArray(n) && n.length === 2 && n.every((v) => Number.isInteger(v) && v > 0))
+		) {
+			errors.push('web.native: expected [width, height] in whole pixels');
+		}
 	}
 	if (g.cover !== undefined) {
 		str(g.cover.path, 'cover.path', COVER_PATH);

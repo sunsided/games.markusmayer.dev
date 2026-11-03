@@ -1,41 +1,54 @@
 <script lang="ts">
-	import { asset, resolve } from '$app/paths';
-	import { buildPath, coverPath, fill } from '#lib/registry.js';
+	import { resolve } from '$app/paths';
+	import Button from '#lib/components/atoms/Button.svelte';
+	import Hash from '#lib/components/atoms/Hash.svelte';
+	import Led from '#lib/components/atoms/Led.svelte';
+	import SpecList, { type Spec } from '#lib/components/molecules/SpecList.svelte';
+	import GameScreen from '#lib/components/organisms/GameScreen.svelte';
+	import Machine from '#lib/components/organisms/Machine.svelte';
+	import { releaseDate } from '#lib/format.js';
+	import { coverPath, fill } from '#lib/registry.js';
 	import { ORIGIN } from '#lib/site.js';
-	import { tick } from 'svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	const game = $derived(data.game);
-	// Fetched by `task builds`, so not a static file the type of asset() knows at check time.
-	type Asset = Parameters<typeof asset>[0];
-	const src = $derived(game.web ? asset(buildPath(game) as Asset) : undefined);
-	const cover = $derived(game.cover ? asset(coverPath(game)! as Asset) : undefined);
-	const ogImage = $derived(game.cover ? `${ORIGIN}/${coverPath(game)}` : undefined);
 	const links = $derived(
 		(game.links ?? []).map((l) => ({ ...l, url: fill(l.url, game.release.version) }))
 	);
+	const ogImage = $derived(game.cover ? `${ORIGIN}/${coverPath(game)}` : undefined);
 
-	let frame: HTMLIFrameElement | undefined = $state();
-	// The build (megabytes of wasm) only loads on Play; until then the title card stands in.
-	// Pressing Play is also the gesture the browser wants before the game may make a sound.
 	let playing = $state(false);
-
-	async function play() {
-		playing = true;
-		await tick();
-		frame?.focus();
-	}
+	let frame: HTMLIFrameElement | undefined = $state();
 
 	function fullscreen() {
 		frame?.requestFullscreen?.().catch(() => {});
 		frame?.focus();
 	}
+
+	const specs = $derived<Spec[]>([
+		...(game.platform ? [{ term: 'Styled on', detail: game.platform }] : []),
+		{ term: 'Release', detail: release },
+		{ term: 'Released', detail: releaseDate(game.release.date) },
+		...(game.web ? [{ term: 'Build', detail: build }] : []),
+		{ term: 'Source', detail: source }
+	]);
 </script>
 
+{#snippet release()}
+	<a href={game.release.url}>{game.release.version}</a>
+{/snippet}
+{#snippet build()}
+	<Hash value={game.web!.sha256} />, attested by
+	<a href={`https://github.com/${game.repo}/attestations`}>GitHub</a>
+{/snippet}
+{#snippet source()}
+	<a href={`https://github.com/${game.repo}`}>{game.repo}</a>
+{/snippet}
+
 <svelte:head>
-	<title>{game.title} · Games · Markus Mayer</title>
-	<meta name="description" content={`${game.title} — ${game.tagline}`} />
+	<title>{game.title} · Games by Markus Mayer</title>
+	<meta name="description" content={`${game.title}: ${game.tagline}`} />
 	<meta property="og:title" content={game.title} />
 	<meta property="og:description" content={game.tagline} />
 	<meta property="og:type" content="website" />
@@ -47,229 +60,149 @@
 	{/if}
 </svelte:head>
 
-<p class="back"><a href={resolve('/')}>← All games</a></p>
+<nav class="crumbs" aria-label="Breadcrumb">
+	<a href={resolve('/')}>All games</a>
+</nav>
 
-<h1>{game.title}</h1>
-<p class="tagline">{game.tagline}</p>
-
-{#if src}
-	<div class="stage" style:aspect-ratio={game.web?.aspect ?? '16 / 10'}>
-		{#if playing}
-			<!-- Same origin and our own attested build, so no sandbox: the game needs storage,
-			     audio and the GPU like any page would. -->
-			<iframe
-				bind:this={frame}
-				{src}
-				title={`${game.title} (game)`}
-				allow="fullscreen; gamepad; autoplay"
-				allowfullscreen
-			></iframe>
-		{:else}
-			<button type="button" class="poster" onclick={play} aria-label={`Play ${game.title}`}>
-				{#if cover}
-					<img src={cover} alt={game.cover?.alt} />
-				{:else}
-					<span class="marquee">{game.title}</span>
+<article class="game" data-frame={game.frame ?? 'pc'}>
+	<div class="machine-col">
+		<div class="rig">
+			<Machine {game} power live={playing}>
+				<GameScreen {game} mode="playable" bind:playing bind:frame />
+			</Machine>
+			<div class="console">
+				<span class="state">
+					<Led color={playing ? 'green' : 'amber'} size="0.6rem" />
+					{playing ? 'Running' : game.web ? 'Ready' : 'No browser build'}
+				</span>
+				{#if playing}
+					<Button variant="quiet" onclick={fullscreen}>Fullscreen</Button>
 				{/if}
-				<span class="play" aria-hidden="true"><span>▶ Play</span></span>
-			</button>
-		{/if}
+			</div>
+		</div>
 	</div>
-	<div class="controls">
-		{#if playing}
-			<button type="button" onclick={fullscreen}>⛶ Fullscreen</button>
-			<span class="hint">Click the game to give it the keyboard.</span>
-		{:else}
-			<span class="hint">Loads the game, a few megabytes of WebAssembly.</span>
-		{/if}
-		{#if game.cover?.credit}<span class="credit">{game.cover.credit}</span>{/if}
-	</div>
-{:else if cover}
-	<figure class="stage still">
-		<img src={cover} alt={game.cover?.alt} />
-		{#if game.cover?.credit}<figcaption class="credit">{game.cover.credit}</figcaption>{/if}
-	</figure>
-{/if}
 
-<section class="about">
-	{#if game.description}<p>{game.description}</p>{/if}
-	<dl>
-		<dt>Release</dt>
-		<dd><a href={game.release.url}>{game.release.version}</a></dd>
-		{#if game.tags?.length}
-			<dt>Tags</dt>
-			<dd>{game.tags.join(' · ')}</dd>
+	<div class="about">
+		<header class="head">
+			<h1>{game.title}</h1>
+			<p class="tagline">{game.tagline}</p>
+		</header>
+		{#if game.description}<p class="description">{game.description}</p>{/if}
+		{#if playing}
+			<p class="hint">Click the game to give it the keyboard.</p>
+		{:else if game.web}
+			<p class="hint">Press Play on the screen to load it, a few megabytes of WebAssembly.</p>
 		{/if}
-	</dl>
-	{#if links.length}
-		<ul class="links">
-			{#each links as link (link.url)}
-				<li><a href={link.url}>{link.label}</a></li>
-			{/each}
-		</ul>
-	{/if}
-</section>
+		<SpecList items={specs} />
+		{#if links.length}
+			<ul class="links">
+				{#each links as link (link.url)}
+					<li><Button variant="quiet" href={link.url}>{link.label}</Button></li>
+				{/each}
+			</ul>
+		{/if}
+		{#if game.cover?.credit}<p class="credit">{game.cover.credit}</p>{/if}
+	</div>
+</article>
 
 <style>
-	.back {
-		margin: 0 0 1rem;
-		font: 0.875rem var(--mono);
+	.crumbs {
+		padding-block: var(--space-4) var(--space-6);
+		font-size: var(--step--1);
 	}
-	.back a {
-		color: var(--muted);
+	.crumbs a {
+		color: var(--color-text-muted);
 	}
-	h1 {
-		margin: 0;
-		font: 600 clamp(1.75rem, 5vw, 2.75rem) / 1.1 var(--mono);
+	.crumbs a::before {
+		content: '‹ ';
 	}
-	.tagline {
-		margin: 0.25rem 0 1.5rem;
-		color: var(--muted);
-	}
-	.stage {
-		width: 100%;
-		max-height: 80dvh;
-		background: #000;
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		overflow: hidden;
-		margin-inline: auto;
-	}
-	iframe {
-		display: block;
-		width: 100%;
-		height: 100%;
-		border: 0;
-	}
-	.poster {
-		position: relative;
-		display: block;
-		width: 100%;
-		height: 100%;
-		padding: 0;
-		border: 0;
-		border-radius: 0;
-		background: #000;
-		cursor: pointer;
-	}
-	.poster img,
-	.still img {
-		display: block;
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		image-rendering: pixelated;
-	}
-	.poster .marquee {
+
+	.game {
 		display: grid;
-		place-items: center;
-		height: 100%;
-		font: 700 clamp(2rem, 6vw, 3.5rem) / 1.1 var(--mono);
-		color: var(--accent);
-		background:
-			repeating-linear-gradient(0deg, #0003 0 2px, transparent 2px 4px),
-			radial-gradient(ellipse at center, #1d2530, #07090b 75%);
+		gap: var(--space-7) var(--space-8);
 	}
-	/* A video-player Play: centred, over a light dim, so it reads on any title art. */
-	.play {
-		position: absolute;
-		inset: 0;
-		display: grid;
-		place-items: center;
-		background: radial-gradient(circle at center, #0008 0, #0003 18rem, transparent 30rem);
-		transition: background-color 120ms;
-	}
-	.play span {
-		padding: 0.75rem 1.5rem;
-		font: 700 1.25rem var(--mono);
-		color: var(--accent-ink);
-		background: var(--accent);
-		border-radius: 999px;
-		box-shadow:
-			0 0 0 4px #000a,
-			0 0.5rem 2rem #000c;
-		transition: scale 120ms;
-	}
-	.poster:hover .play,
-	.poster:focus-visible .play {
-		background-color: #0002;
-	}
-	.poster:hover .play span,
-	.poster:focus-visible .play span {
-		scale: 1.08;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.play,
-		.play span {
-			transition: none;
+	@media (min-width: 62rem) {
+		.game {
+			grid-template-columns: minmax(0, 1.65fr) minmax(19rem, 1fr);
+			align-items: start;
+		}
+		.game[data-frame='arcade'] {
+			grid-template-columns: minmax(0, 1.25fr) minmax(19rem, 1fr);
+		}
+		.about {
+			position: sticky;
+			top: var(--space-6);
 		}
 	}
-	.still {
-		margin: 0;
-		position: relative;
+
+	.machine-col {
+		display: grid;
+		justify-items: center;
 	}
-	.still figcaption {
-		position: absolute;
-		right: 0.5rem;
-		bottom: 0.375rem;
+	/* The machine and its status row, as one: never taller than the window, so the whole
+	   machine and its screen stay in view. */
+	.rig {
+		display: grid;
+		gap: var(--space-5);
+		inline-size: 100%;
 	}
-	.credit {
-		margin-left: auto;
-		color: var(--muted);
-		font: 0.75rem var(--mono);
+	.game[data-frame='pc'] .rig {
+		max-inline-size: calc((100dvh - 9rem) * 1.12);
 	}
-	.controls {
+	.game[data-frame='arcade'] .rig {
+		max-inline-size: calc((100dvh - 8rem) * 0.7);
+	}
+
+	.console {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem 1rem;
 		align-items: center;
-		margin-top: 0.75rem;
+		justify-content: space-between;
+		gap: var(--space-4);
+		min-block-size: 2.75rem;
+		font-size: var(--step--1);
+		color: var(--color-text-muted);
 	}
-	button {
-		font: 600 0.875rem var(--mono);
-		color: var(--accent-ink);
-		background: var(--accent);
-		border: 0;
-		border-radius: 0.25rem;
-		padding: 0.5rem 0.875rem;
-		cursor: pointer;
+	.state {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.about {
+		display: grid;
+		gap: var(--space-5);
+	}
+	.head {
+		display: grid;
+		gap: var(--space-2);
+	}
+	h1 {
+		font-size: var(--step-4);
+		font-weight: 800;
+		letter-spacing: -0.03em;
+	}
+	.tagline {
+		font-size: var(--step-1);
+		line-height: var(--leading-snug);
+		color: var(--color-text-muted);
+	}
+	.description {
+		max-inline-size: var(--measure);
 	}
 	.hint {
-		color: var(--muted);
-		font-size: 0.875rem;
-	}
-	.about {
-		max-width: 42rem;
-		margin-top: 2rem;
-	}
-	dl {
-		display: grid;
-		grid-template-columns: max-content 1fr;
-		gap: 0.25rem 1rem;
-		font: 0.875rem var(--mono);
-	}
-	dt {
-		color: var(--muted);
-	}
-	dd {
-		margin: 0;
+		font-size: var(--step--1);
+		color: var(--color-text-muted);
 	}
 	.links {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
-		list-style: none;
+		gap: var(--space-3);
+		margin: 0;
 		padding: 0;
+		list-style: none;
 	}
-	.links a {
-		display: inline-block;
-		padding: 0.375rem 0.75rem;
-		border: 1px solid var(--line);
-		border-radius: 0.25rem;
-		text-decoration: none;
-		font: 0.875rem var(--mono);
-	}
-	.links a:hover {
-		border-color: var(--accent);
+	.credit {
+		font-size: var(--step--1);
+		color: var(--color-text-muted);
 	}
 </style>

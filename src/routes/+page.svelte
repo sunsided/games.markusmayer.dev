@@ -1,145 +1,49 @@
 <script lang="ts">
-	import { asset, resolve } from '$app/paths';
+	import Showroom from '#lib/components/organisms/Showroom.svelte';
 	import { listed } from '#lib/games.js';
-	import { coverPath } from '#lib/registry.js';
+	import { ORIGIN } from '#lib/site.js';
 
-	// Fetched by `task builds`, so not a static file the type of asset() knows at check time.
-	type Asset = Parameters<typeof asset>[0];
-	const cover = (path: string) => asset(path as Asset);
-
-	const date = (iso: string) =>
-		new Date(iso).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+	const description =
+		'Retro-styled games written in Rust and compiled to WebAssembly, playable in the browser from the exact build each repository released.';
 </script>
 
 <svelte:head>
-	<title>Games · Markus Mayer</title>
-	<meta
-		name="description"
-		content="Small games by Markus Mayer, most of them Rust compiled to WebAssembly, playable in the browser."
-	/>
+	<title>Games by Markus Mayer</title>
+	<meta name="description" content={description} />
+	<meta property="og:title" content="Games by Markus Mayer" />
+	<meta property="og:description" content={description} />
+	<meta property="og:url" content={`${ORIGIN}/`} />
 </svelte:head>
 
-<h1>Insert coin.</h1>
-<p class="lede">
-	Small games, mostly Rust compiled to WebAssembly. Pick one and play it right here in the browser.
-</p>
+<section class="intro">
+	<h1>Pick a machine. Press Play.</h1>
+	<p class="lede">
+		Retro-styled games written in Rust and compiled to WebAssembly. Each one plays right here in
+		your browser, from the exact build its repository released.
+	</p>
+</section>
 
-<ul class="grid">
-	{#each listed as game (game.slug)}
-		<li>
-			<a class="card" href={`${resolve('/[slug]', { slug: game.slug })}/`}>
-				{#if game.cover}
-					<!-- The title follows as text, so the art is decoration here. -->
-					<img class="marquee cover" src={cover(coverPath(game)!)} alt="" loading="lazy" />
-				{:else}
-					<span class="marquee" aria-hidden="true">{game.title}</span>
-				{/if}
-				<span class="body">
-					<span class="title">{game.title}</span>
-					<span class="tagline">{game.tagline}</span>
-					<span class="meta">
-						<span>{game.release.version}</span>
-						<span>{date(game.release.date)}</span>
-						<span class="kind">{game.web ? '▶ Play in browser' : '↓ Download'}</span>
-					</span>
-				</span>
-			</a>
-		</li>
-	{/each}
-</ul>
+<section class="room" aria-labelledby="floor-title">
+	<h2 id="floor-title" class="visually-hidden">The games</h2>
+	<Showroom games={listed} />
+</section>
 
 <style>
+	.intro {
+		display: grid;
+		gap: var(--space-5);
+		padding-block: clamp(2.5rem, 7vw, 6rem) clamp(3rem, 8vw, 6.5rem);
+	}
 	h1 {
-		margin: 0;
-		font: 600 clamp(2rem, 6vw, 3.5rem) / 1.1 var(--mono);
-		letter-spacing: -0.02em;
+		max-inline-size: 13ch;
+		font-size: var(--step-5);
+		font-weight: 800;
+		letter-spacing: -0.035em;
 	}
 	.lede {
-		max-width: 40rem;
-		color: var(--muted);
-		margin-block: 0.75rem 2.5rem;
-	}
-	.grid {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
-		gap: 1.25rem;
-	}
-	.card {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		text-decoration: none;
-		background: var(--panel);
-		border: 1px solid var(--line);
-		border-radius: 0.5rem;
-		overflow: hidden;
-		transition:
-			border-color 120ms,
-			transform 120ms;
-	}
-	.card:hover {
-		border-color: var(--accent);
-		transform: translateY(-2px);
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.card,
-		.card:hover {
-			transition: none;
-			transform: none;
-		}
-	}
-	/* Stand-in cover art: the title on a scanlined screen, until a game ships a cover. */
-	.marquee {
-		display: grid;
-		place-items: center;
-		aspect-ratio: 16 / 10;
-		padding: 1rem;
-		text-align: center;
-		font: 700 clamp(1.5rem, 4vw, 2.25rem) / 1.1 var(--mono);
-		color: var(--accent);
-		text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent);
-		background:
-			repeating-linear-gradient(0deg, #0003 0 2px, transparent 2px 4px),
-			radial-gradient(ellipse at center, #1d2530, #07090b 75%);
-		border-bottom: 1px solid var(--line);
-	}
-	/* Title art is pixel art at a multiple of its screen: keep the pixels square and sharp. */
-	.cover {
-		display: block;
-		width: 100%;
-		padding: 0;
-		object-fit: cover;
-		image-rendering: pixelated;
-		background: #000;
-	}
-	.body {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		padding: 1rem 1.125rem 1.125rem;
-		flex: 1;
-	}
-	.title {
-		font-weight: 650;
-		font-size: 1.125rem;
-	}
-	.tagline {
-		color: var(--muted);
-	}
-	.meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem 0.875rem;
-		margin-top: auto;
-		padding-top: 0.75rem;
-		font: 0.8125rem var(--mono);
-		color: var(--muted);
-	}
-	.kind {
-		margin-left: auto;
-		color: var(--accent);
+		max-inline-size: 46ch;
+		font-size: var(--step-1);
+		line-height: var(--leading-snug);
+		color: var(--color-text-muted);
 	}
 </style>

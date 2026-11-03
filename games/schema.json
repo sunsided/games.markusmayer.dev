@@ -43,6 +43,20 @@
 			"description": "Registered but not listed.",
 			"type": "boolean"
 		},
+		"frame": {
+			"description": "The machine it stands in: a beige VGA monitor or an arcade cabinet.",
+			"enum": ["pc", "arcade"],
+			"default": "pc"
+		},
+		"platform": {
+			"description": "The era it is styled on, e.g. \"DOS PC, VGA 320×200\".",
+			"type": "string"
+		},
+		"accent": {
+			"description": "The colour its screen throws into the room.",
+			"type": "string",
+			"pattern": "^#[0-9a-fA-F]{6}$"
+		},
 		"release": {
 			"type": "object",
 			"required": ["version", "date", "url"],
@@ -83,6 +97,21 @@
 				"aspect": {
 					"description": "CSS aspect-ratio of the play frame, e.g. \"16 / 10\".",
 					"type": "string"
+				},
+				"native": {
+					"description": "The game's own screen in pixels. Games that scale by whole numbers get their frame at the next whole multiple of this, scaled down to fit.",
+					"type": "array",
+					"items": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"minItems": 2,
+					"maxItems": 2
+				},
+				"query": {
+					"description": "Launch options for the build, as a query string without ?, e.g. \"cracktro\".",
+					"type": "string",
+					"pattern": "^[\\w.=&-]+$"
 				},
 				"attest": {
 					"description": "Require a GitHub build-provenance attestation for the zip.",

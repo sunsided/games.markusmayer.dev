@@ -7,6 +7,9 @@
 	"repo": "sunsided/cookie-doh",
 	"tags": ["arcade", "rust", "wasm"],
 	"order": 20,
+	"frame": "arcade",
+	"platform": "C64 and Amiga-era arcade",
+	"accent": "#ff9c3a",
 	"release": {
 		"version": "v0.2.2",
 		"date": "2026-11-02T15:38:54Z",
@@ -15,7 +18,9 @@
 	"web": {
 		"asset": "cookie-doh-{version}-web.zip",
 		"sha256": "2e7febeeb3d3ff158761c346610c28b19ff0125da19fe4a0e1a70368f1795808",
-		"aspect": "16 / 10"
+		"aspect": "16 / 10",
+		"native": [320, 200],
+		"query": "cracktro"
 	},
 	"cover": {
 		"path": "docs/screenshots/title.png",

@@ -1,0 +1,107 @@
+/*
+	Design tokens. Two layers:
+
+	  primitives   raw values, named for what they are (--plum-900, --beige-300)
+	  semantic     what a value is for (--color-bg, --color-accent); components use these
+
+	Components may read primitives only for hardware materials (beige plastic, cabinet
+	laminate), which are things in the picture rather than parts of the interface.
+
+	Per game, `--game-accent` is set inline from the registry: the colour of the light its
+	screen throws into the room.
+*/
+
+:root {
+	/* --- Primitives: the room ------------------------------------------------ */
+	--plum-950: #120d22;
+	--plum-900: #1b1433;
+	--plum-800: #271d47;
+	--plum-700: #352862;
+	--plum-500: #5b4a94;
+	--mist-300: #b4a9cc;
+	--mist-200: #d3cce0;
+	--paper-100: #f3ecdf;
+	--amber-500: #ffb000;
+	--amber-300: #ffcd5c;
+	--amber-ink: #2a1a00;
+
+	/* --- Primitives: hardware materials --------------------------------------- */
+	--beige-100: #ece4cf;
+	--beige-200: #e0d6bc;
+	--beige-300: #cfc3a4;
+	--beige-500: #a89b7c;
+	--beige-700: #6e644d;
+	--recess: #2b2722;
+	--laminate-950: #0f0c13;
+	--laminate-900: #17121d;
+	--laminate-700: #2b2433;
+	--chrome-300: #c9c6d1;
+	--led-green: #5dff7a;
+	--led-amber: #ffb000;
+	--led-red: #ff5040;
+	--glass: #050507;
+
+	/* --- Semantic: colour ----------------------------------------------------- */
+	--color-bg: var(--plum-900);
+	--color-bg-deep: var(--plum-950);
+	--color-surface: var(--plum-800);
+	--color-line: color-mix(in oklab, var(--mist-300) 22%, transparent);
+	--color-text: var(--paper-100);
+	--color-text-muted: var(--mist-300);
+	--color-accent: var(--amber-500);
+	--color-accent-hover: var(--amber-300);
+	--color-accent-ink: var(--amber-ink);
+	--color-focus: var(--amber-300);
+	--game-accent: var(--amber-500);
+
+	/* --- Semantic: type ------------------------------------------------------- */
+	--font-sans: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+	--font-pixel: 'Silkscreen', ui-monospace, monospace;
+
+	/* Archivo's width axis is the expressive tool: wide for display, normal for reading. */
+	--wdth-display: 125%;
+	--wdth-text: 100%;
+	--wdth-tight: 82%;
+
+	/* A classic scale (Bringhurst's 12/14/16/18/21/24/36/48/60/72), fluid at the top. */
+	--step--1: 0.875rem;
+	--step-0: 1.0625rem;
+	--step-1: 1.3125rem;
+	--step-2: 1.5rem;
+	--step-3: clamp(1.75rem, 1.2rem + 2.2vw, 2.25rem);
+	--step-4: clamp(2.25rem, 1.2rem + 4.4vw, 3.75rem);
+	--step-5: clamp(2.6rem, 1rem + 6.5vw, 5rem);
+
+	--leading-tight: 1.04;
+	--leading-snug: 1.25;
+	--leading-text: 1.55;
+	--measure: 62ch;
+
+	/* --- Semantic: space, shape, depth ---------------------------------------- */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--space-6: 2rem;
+	--space-7: 3rem;
+	--space-8: 4.5rem;
+	--space-9: 7rem;
+	--gutter: clamp(1rem, 4vw, 3rem);
+	--page-max: 76rem;
+
+	--radius-s: 0.375rem;
+	--radius-m: 0.75rem;
+	--radius-pill: 999px;
+
+	--shadow-object:
+		0 2px 0 rgb(0 0 0 / 0.25), 0 1.5rem 2.5rem -1rem rgb(0 0 0 / 0.6),
+		0 3rem 5rem -2rem rgb(0 0 0 / 0.5);
+
+	/* --- Semantic: motion ----------------------------------------------------- */
+	--ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--ease-snap: cubic-bezier(0.3, 1.4, 0.5, 1);
+	--dur-fast: 140ms;
+	--dur-mid: 260ms;
+	--dur-power: 1100ms;
+}

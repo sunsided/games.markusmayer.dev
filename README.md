@@ -35,6 +35,13 @@ with the current tag.
   framed by `/<slug>/`. Old versions stay in the bucket, immutable.
 - **Anything else**: leave out `web`, give `links` (download, store page, itch.io…). It
   gets a card and a page with those links.
+- **Its machine**: `frame` is the hardware it stands in on the showroom floor (`pc`, a beige
+  VGA monitor, or `arcade`, an upright cabinet), `platform` the era it is styled on, in
+  words, and `accent` the colour its screen throws into the room.
+- **Launching**: `web.native` is the game's own screen (`[320, 200]`). Games that scale by
+  whole numbers get their frame at the next whole multiple of it, scaled to fit the tube, so
+  they never draw at 1x in the middle. `web.query` passes launch options to the build
+  (`"cracktro"`).
 - **Title card** (optional `cover`): a PNG, JPEG, WebP, GIF or AVIF from the game's
   repository, read at the release tag (`"path": "docs/screenshots/title.png"`) and pinned by
   SHA-256 like the build; each release sync re-pins it. It is the card's art, the game
