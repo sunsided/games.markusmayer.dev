@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { LINKS } from '#lib/site.js';
+	import GithubMark from '../atoms/GithubMark.svelte';
 	import Monogram from '../atoms/Monogram.svelte';
 </script>
 
@@ -8,7 +10,10 @@
 		<Monogram size="0.8rem" />
 		<span class="name">Games <span class="by">by Markus Mayer</span></span>
 	</a>
-	<a class="out" href="https://markusmayer.dev/">markusmayer.dev</a>
+	<nav class="out" aria-label="Elsewhere">
+		<a href={LINKS.home}>markusmayer.dev</a>
+		<a class="icon" href={LINKS.github} aria-label="GitHub" title="GitHub"><GithubMark /></a>
+	</nav>
 </header>
 
 <style>
@@ -39,8 +44,23 @@
 		color: var(--color-text-muted);
 	}
 	.out {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
 		font-size: var(--step--1);
 		color: var(--color-text-muted);
+	}
+	.icon {
+		display: grid;
+		place-items: center;
+		inline-size: 2.25rem;
+		block-size: 2.25rem;
+		margin-inline-end: -0.5rem;
+		border-radius: 50%;
+		transition: color var(--dur-fast) var(--ease-out);
+	}
+	.icon:hover {
+		color: var(--color-text);
 	}
 	@media (max-width: 30rem) {
 		.by {
