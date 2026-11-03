@@ -15,9 +15,16 @@ export interface Release {
 	url: string;
 }
 
+/**
+ * Launch options. Embedded games get them as data attributes on their canvas
+ * (`{ cracktro: true }` is `data-cracktro`) and in the restart event's detail; framed ones as
+ * a query string (`?cracktro`). `false` leaves an option out of both.
+ */
+export type Options = Record<string, boolean | string>;
+
 export interface Variant {
 	label: string;
-	query: string;
+	options: Options;
 }
 
 export interface Web {
@@ -31,9 +38,19 @@ export interface Web {
 	 * only get their frame at the next whole multiple of this, scaled to fit.
 	 */
 	native?: [number, number];
-	/** Launch options for the build, as a query string without `?`, e.g. `cracktro`. */
-	query?: string;
-	/** Named ways to launch the same build, each with its own query (may be empty). */
+	/**
+	 * Embed the game in the page rather than framing it: its wasm-bindgen module in the
+	 * build folder (`cheese.js`) and the id of the canvas it binds to (`cheese`). The Play
+	 * click then counts as the game's own, so it may start its sound at once; a framed game
+	 * is a separate document the click never reached.
+	 */
+	module?: string;
+	canvas?: string;
+	/** The event an embedded game restarts on, dispatched on its canvas with the options. */
+	restart?: string;
+	/** Launch options for the default start. */
+	options?: Options;
+	/** Named ways to launch the same build; the first is the one Play starts. */
 	variants?: Variant[];
 	attest?: boolean;
 }
@@ -94,6 +111,13 @@ export const webAsset = (game: Game) => game.web && fill(game.web.asset, game.re
 export const buildPath = (game: Game) =>
 	`builds/${game.slug}/${game.release.version}/${game.web?.entry ?? 'index.html'}`;
 
+/** Options as a query string for a framed game: `{ cracktro: true, gfx: 'ega' }` → `cracktro&gfx=ega`. */
+export const toQuery = (options: Options = {}) =>
+	Object.entries(options)
+		.filter(([, v]) => v !== false)
+		.map(([k, v]) => (v === true ? k : `${k}=${encodeURIComponent(v)}`))
+		.join('&');
+
 /** Where a game's cover is served: named by its hash, so it can be cached forever. */
 export const coverPath = (game: Game) => {
 	const c = game.cover;
@@ -132,12 +156,29 @@ export function validate(value: unknown, where: string): Game {
 	if (g.web !== undefined) {
 		str(g.web.asset, 'web.asset');
 		str(g.web.sha256, 'web.sha256', SHA256);
-		if (g.web.query !== undefined) str(g.web.query, 'web.query', /^[\w.=&-]+$/);
+		if (g.web.module !== undefined) str(g.web.module, 'web.module', /^[\w.-]+\.js$/);
+		if (g.web.canvas !== undefined) str(g.web.canvas, 'web.canvas', /^[A-Za-z][\w-]*$/);
+		if ((g.web.module === undefined) !== (g.web.canvas === undefined)) {
+			errors.push('web.module and web.canvas: give both to embed the game, or neither');
+		}
+		if (g.web.restart !== undefined) str(g.web.restart, 'web.restart', /^[\w:.-]+$/);
+		const options = (o: unknown, name: string) => {
+			if (o === undefined) return;
+			if (typeof o !== 'object' || o === null || Array.isArray(o)) {
+				errors.push(`${name}: expected an object of options`);
+				return;
+			}
+			for (const [k, v] of Object.entries(o)) {
+				if (!/^[a-z][a-z0-9-]*$/.test(k)) errors.push(`${name}.${k}: not a valid option name`);
+				if (typeof v !== 'boolean' && !(typeof v === 'string' && /^[\w.-]*$/.test(v))) {
+					errors.push(`${name}.${k}: expected true, false or a plain word`);
+				}
+			}
+		};
+		options(g.web.options, 'web.options');
 		for (const [i, v] of (g.web.variants ?? []).entries()) {
 			str(v?.label, `web.variants[${i}].label`);
-			if (typeof v?.query !== 'string' || !/^[\w.=&-]*$/.test(v.query)) {
-				errors.push(`web.variants[${i}].query: expected a query string (may be empty)`);
-			}
+			options(v?.options ?? {}, `web.variants[${i}].options`);
 		}
 		const n = g.web.native;
 		if (

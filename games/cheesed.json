@@ -19,7 +19,10 @@
 		"asset": "cheesed-{version}-web.zip",
 		"sha256": "8b0240e10dea516ee1f059a6a6d739f843c45b830a39b43de46643988eda8797",
 		"aspect": "16 / 10",
-		"native": [320, 200]
+		"native": [320, 200],
+		"module": "cheese.js",
+		"canvas": "cheese",
+		"restart": "cheese:restart"
 	},
 	"cover": {
 		"path": "docs/screenshots/title.png",

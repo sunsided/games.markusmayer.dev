@@ -38,10 +38,16 @@ with the current tag.
 - **Its machine**: `frame` is the hardware it stands in on the showroom floor (`pc`, a beige
   VGA monitor, or `arcade`, an upright cabinet), `platform` the era it is styled on, in
   words, and `accent` the colour its screen throws into the room.
-- **Launching**: `web.native` is the game's own screen (`[320, 200]`). Games that scale by
-  whole numbers get their frame at the next whole multiple of it, scaled to fit the tube, so
-  they never draw at 1x in the middle. `web.query` passes launch options to the build
-  (`"cracktro"`).
+- **Launching**: with `web.module` and `web.canvas` (the wasm-bindgen module in the build
+  folder and the id of the canvas it binds to), the game runs in the page itself, so the
+  Play click counts as the game's own and it may start its sound at once. Without them it
+  runs in a frame, a separate document the click never reached, and asks for a click of
+  its own. `web.native` is the game's own screen (`[320, 200]`): games that scale by whole
+  numbers get the next whole multiple of it, scaled to fit the tube. `web.options` are the
+  launch options (`{ "cracktro": true }`), passed as `data-*` attributes on an embedded
+  game's canvas or as a query string to a framed one. `web.variants` names alternatives
+  (Cookie D'oh!'s cracked and registered versions), shown as buttons; switching while
+  running sends the game's `web.restart` event with the options as its detail.
 - **Title card** (optional `cover`): a PNG, JPEG, WebP, GIF or AVIF from the game's
   repository, read at the release tag (`"path": "docs/screenshots/title.png"`) and pinned by
   SHA-256 like the build; each release sync re-pins it. It is the card's art, the game

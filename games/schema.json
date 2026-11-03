@@ -108,25 +108,64 @@
 					"minItems": 2,
 					"maxItems": 2
 				},
-				"query": {
-					"description": "Launch options for the build, as a query string without ?, e.g. \"cracktro\".",
+				"module": {
+					"description": "Embed the game in the page: its wasm-bindgen module in the build folder, e.g. \"cheese.js\". Needs `canvas`. The Play click then counts for the game, so its sound may start at once.",
 					"type": "string",
-					"pattern": "^[\\w.=&-]+$"
+					"pattern": "^[\\w.-]+\\.js$"
+				},
+				"canvas": {
+					"description": "The id of the canvas the game binds to, e.g. \"cheese\".",
+					"type": "string"
+				},
+				"restart": {
+					"description": "The event the embedded game restarts on, dispatched on its canvas with the options as detail.",
+					"type": "string"
+				},
+				"options": {
+					"type": "object",
+					"additionalProperties": {
+						"anyOf": [
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "string",
+								"pattern": "^[\\w.-]*$"
+							}
+						]
+					},
+					"propertyNames": {
+						"pattern": "^[a-z][a-z0-9-]*$"
+					},
+					"description": "Launch options for the default start: data attributes on an embedded game's canvas, a query string for a framed one."
 				},
 				"variants": {
-					"description": "Named ways to launch the same build, shown as buttons on the game's page. The default launch is `query`.",
+					"description": "Named ways to launch the same build, shown as buttons; the first is what Play starts.",
 					"type": "array",
 					"items": {
 						"type": "object",
-						"required": ["label", "query"],
+						"required": ["label", "options"],
 						"additionalProperties": false,
 						"properties": {
 							"label": {
 								"type": "string"
 							},
-							"query": {
-								"type": "string",
-								"pattern": "^[\\w.=&-]*$"
+							"options": {
+								"type": "object",
+								"additionalProperties": {
+									"anyOf": [
+										{
+											"type": "boolean"
+										},
+										{
+											"type": "string",
+											"pattern": "^[\\w.-]*$"
+										}
+									]
+								},
+								"propertyNames": {
+									"pattern": "^[a-z][a-z0-9-]*$"
+								}
 							}
 						}
 					}

@@ -20,15 +20,24 @@
 		"sha256": "2e7febeeb3d3ff158761c346610c28b19ff0125da19fe4a0e1a70368f1795808",
 		"aspect": "16 / 10",
 		"native": [320, 200],
-		"query": "cracktro",
+		"module": "cookie-doh.js",
+		"canvas": "cookie-doh",
+		"restart": "cookie-doh:restart",
+		"options": {
+			"cracktro": true
+		},
 		"variants": [
 			{
-				"label": "Registered version",
-				"query": ""
+				"label": "Cracked version",
+				"options": {
+					"cracktro": true
+				}
 			},
 			{
-				"label": "Cracked version",
-				"query": "cracktro"
+				"label": "Registered version",
+				"options": {
+					"cracktro": false
+				}
 			}
 		]
 	},

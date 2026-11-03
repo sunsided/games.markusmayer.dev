@@ -7,7 +7,7 @@
 	import GameScreen from '#lib/components/organisms/GameScreen.svelte';
 	import Machine from '#lib/components/organisms/Machine.svelte';
 	import { releaseDate } from '#lib/format.js';
-	import { coverPath, fill } from '#lib/registry.js';
+	import { coverPath, fill, type Options } from '#lib/registry.js';
 	import { ORIGIN } from '#lib/site.js';
 	import { tick } from 'svelte';
 	import type { PageProps } from './$types';
@@ -20,20 +20,21 @@
 	const ogImage = $derived(game.cover ? `${ORIGIN}/${coverPath(game)}` : undefined);
 
 	let playing = $state(false);
-	let frame: HTMLIFrameElement | undefined = $state();
-	/** The launch options of the variant picked below the description, if any. */
-	let query: string | undefined = $state();
+	let screen: HTMLElement | undefined = $state();
+	/** The launch options of the version picked below the description, if any. */
+	let options: Options | undefined = $state();
+	const current = $derived(JSON.stringify(options ?? game.web?.options ?? {}));
 
-	async function launch(q: string) {
-		query = q;
+	async function launch(o: Options) {
+		options = o;
 		playing = true;
 		await tick();
-		frame?.focus();
+		screen?.focus();
 	}
 
 	function fullscreen() {
-		frame?.requestFullscreen?.().catch(() => {});
-		frame?.focus();
+		screen?.requestFullscreen?.().catch(() => {});
+		screen?.focus();
 	}
 
 	const specs = $derived<Spec[]>([
@@ -78,7 +79,7 @@
 	<div class="machine-col">
 		<div class="rig">
 			<Machine {game} power live={playing}>
-				<GameScreen {game} mode="playable" {query} bind:playing bind:frame />
+				<GameScreen {game} mode="playable" {options} bind:playing bind:screen />
 			</Machine>
 			<div class="console">
 				<span class="state">
@@ -108,8 +109,8 @@
 				{#each game.web.variants as v (v.label)}
 					<li>
 						<Button
-							variant={playing && (query ?? game.web.query ?? '') === v.query ? 'primary' : 'quiet'}
-							onclick={() => launch(v.query)}>{v.label}</Button
+							variant={playing && current === JSON.stringify(v.options) ? 'primary' : 'quiet'}
+							onclick={() => launch(v.options)}>{v.label}</Button
 						>
 					</li>
 				{/each}
