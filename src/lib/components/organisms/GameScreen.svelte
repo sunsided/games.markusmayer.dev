@@ -257,6 +257,21 @@
 		transform: scale(var(--fit-scale));
 		transform-origin: 50% 50%;
 	}
+	/*
+		Fullscreen: the browser's own !important rules give the element the whole display and
+		drop `transform`, but not `translate`, the separate property the fit centres with. Left
+		on, it shifted the picture by half its size, showing its bottom-right quarter in the
+		top-left corner. So everything the fit adds goes in fullscreen.
+	*/
+	.view :global(.game-canvas:fullscreen),
+	iframe:fullscreen {
+		translate: none !important;
+		transform: none !important;
+		scale: none !important;
+		inline-size: 100% !important;
+		block-size: 100% !important;
+		inset: 0 !important;
+	}
 	.art {
 		object-fit: cover;
 		image-rendering: pixelated;
