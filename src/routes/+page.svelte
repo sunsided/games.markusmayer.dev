@@ -4,7 +4,7 @@
 	import { ORIGIN } from '#lib/site.js';
 
 	const description =
-		'Retro-styled games written in Rust and compiled to WebAssembly, playable in the browser from the exact build each repository released.';
+		'Small, silly games in the clothes of DOS PCs and arcade cabinets, written in Rust and playable right in the browser.';
 </script>
 
 <svelte:head>
@@ -18,8 +18,8 @@
 <section class="intro">
 	<h1>Pick a machine. Press Play.</h1>
 	<p class="lede">
-		Retro-styled games written in Rust and compiled to WebAssembly. Each one plays right here in
-		your browser, from the exact build its repository released.
+		Small, silly games in the clothes of DOS PCs and arcade cabinets. Pick one and it runs right
+		here in your browser, nothing to install.
 	</p>
 </section>
 
