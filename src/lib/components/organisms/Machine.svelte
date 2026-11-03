@@ -14,13 +14,16 @@
 		power = false,
 		delay = 0,
 		live = false,
-		children
+		children,
+		front
 	}: {
 		game: Game;
 		power?: boolean;
 		delay?: number;
 		live?: boolean;
 		children: Snippet;
+		/** Interface over the screen's glass, such as the Play key. */
+		front?: Snippet;
 	} = $props();
 
 	const aspect = $derived(game.web?.aspect ?? '16 / 10');
@@ -28,7 +31,7 @@
 
 <div class="machine" data-frame={game.frame ?? 'pc'} style:--game-accent={game.accent}>
 	{#snippet tube()}
-		<CrtScreen {aspect} {power} {delay} {live}>{@render children()}</CrtScreen>
+		<CrtScreen {aspect} {power} {delay} {live} {front}>{@render children()}</CrtScreen>
 	{/snippet}
 	{#if game.frame === 'arcade'}
 		<ArcadeCabinet title={game.title} screen={tube} />

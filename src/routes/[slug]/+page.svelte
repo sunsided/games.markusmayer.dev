@@ -3,6 +3,7 @@
 	import Button from '#lib/components/atoms/Button.svelte';
 	import Hash from '#lib/components/atoms/Hash.svelte';
 	import Led from '#lib/components/atoms/Led.svelte';
+	import PlayKey from '#lib/components/molecules/PlayKey.svelte';
 	import SpecList, { type Spec } from '#lib/components/molecules/SpecList.svelte';
 	import GameScreen from '#lib/components/organisms/GameScreen.svelte';
 	import Machine from '#lib/components/organisms/Machine.svelte';
@@ -78,8 +79,13 @@
 <article class="game" data-frame={game.frame ?? 'pc'}>
 	<div class="machine-col">
 		<div class="rig">
-			<Machine {game} power live={playing}>
-				<GameScreen {game} mode="playable" {options} bind:playing bind:screen />
+			{#snippet front()}
+				{#if game.web && !playing}
+					<PlayKey label={`Play ${game.title}`} onclick={() => (playing = true)} />
+				{/if}
+			{/snippet}
+			<Machine {game} power live={playing} {front}>
+				<GameScreen {game} {options} bind:playing bind:screen />
 			</Machine>
 			<div class="console">
 				<span class="state">

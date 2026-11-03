@@ -42,15 +42,14 @@
 <script lang="ts">
 	import { asset } from '$app/paths';
 	import { buildPath, coverPath, toQuery, type Game } from '#lib/registry.js';
-	import { tick } from 'svelte';
 
 	// Fetched by `task builds`, so not static files the type of asset() knows at check time.
 	type Asset = Parameters<typeof asset>[0];
 
 	/**
-	 * What a machine's tube shows. `still`: the title card, nothing to press (the exhibit
-	 * around it is the link). `playable`: the title card with a Play key; pressing it puts
-	 * the game itself on the tube. The build, megabytes of wasm, only loads then.
+	 * What a machine's tube shows: the title card, until `playing`, then the game itself. The
+	 * build, megabytes of wasm, only loads then. The Play key is not drawn here but laid over
+	 * the glass by the page (PlayKey, through Machine's `front`).
 	 *
 	 * Games with `web.module` and `web.canvas` run in this page, so the Play click is their
 	 * own and they may start their sound at once. Others run in a frame, a separate document
@@ -58,13 +57,11 @@
 	 */
 	let {
 		game,
-		mode = 'still',
 		playing = $bindable(false),
 		screen = $bindable(),
 		options
 	}: {
 		game: Game;
-		mode?: 'still' | 'playable';
 		playing?: boolean;
 		/** The element the game draws in, canvas or frame: for focus and fullscreen. */
 		screen?: HTMLElement;
@@ -174,11 +171,10 @@
 		if (screen) sizeTo(screen, fit);
 	});
 
-	async function play() {
-		playing = true;
-		await tick();
-		screen?.focus();
-	}
+	// The keyboard goes to the game as soon as it is on the tube.
+	$effect(() => {
+		if (playing && screen) screen.focus();
+	});
 </script>
 
 {#snippet card(alt: string)}
@@ -208,18 +204,12 @@
 			{/key}
 		{/if}
 	</div>
-{:else if mode === 'playable' && src}
-	<button type="button" class="poster" onclick={play}>
-		{@render card(game.cover?.alt ?? '')}
-		<span class="key"><span class="label">Play {game.title}</span></span>
-	</button>
 {:else}
-	{@render card('')}
+	{@render card(game.cover?.alt ?? '')}
 {/if}
 
 <style>
 	iframe,
-	.poster,
 	.art,
 	.fallback,
 	.slot {
@@ -288,65 +278,5 @@
 		color: var(--game-accent);
 		background: radial-gradient(circle at 50% 45%, #1d1a2a, #050507 75%);
 		text-shadow: 0 0 1.2rem color-mix(in oklab, var(--game-accent) 70%, transparent);
-	}
-
-	.poster {
-		position: relative;
-		padding: 0;
-		background: #000;
-		cursor: pointer;
-	}
-	.poster:focus-visible {
-		outline-offset: -4px;
-	}
-	/* The key sits in the middle of the picture, over a soft pool of shade. */
-	.key {
-		position: absolute;
-		inset: 0;
-		display: grid;
-		place-items: center;
-		background: radial-gradient(
-			circle at center,
-			rgb(0 0 0 / 0.45) 0,
-			rgb(0 0 0 / 0.15) 35%,
-			transparent 60%
-		);
-		transition: background-color var(--dur-mid) var(--ease-out);
-	}
-	.label {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.6em;
-		padding: 0.8em 1.4em 0.85em 1.15em;
-		border-radius: var(--radius-pill);
-		font-size: clamp(0.95rem, 0.7rem + 0.8vw, 1.2rem);
-		font-weight: 700;
-		font-stretch: var(--wdth-display);
-		line-height: 1;
-		color: var(--color-accent-ink);
-		background: var(--color-accent);
-		box-shadow:
-			inset 0 1px 0 rgb(255 255 255 / 0.5),
-			0 4px 0 color-mix(in oklab, var(--color-accent) 50%, #000),
-			0 1.2rem 2.5rem rgb(0 0 0 / 0.6);
-		transition: scale var(--dur-fast) var(--ease-snap);
-	}
-	.label::before {
-		content: '';
-		inline-size: 0;
-		block-size: 0;
-		border-block: 0.42em solid transparent;
-		border-inline-start: 0.7em solid currentColor;
-	}
-	.poster:hover .key,
-	.poster:focus-visible .key {
-		background-color: rgb(0 0 0 / 0.12);
-	}
-	.poster:hover .label,
-	.poster:focus-visible .label {
-		scale: 1.06;
-	}
-	.poster:active .label {
-		scale: 0.98;
 	}
 </style>

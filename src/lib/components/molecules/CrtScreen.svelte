@@ -16,13 +16,16 @@
 		power = false,
 		delay = 0,
 		live = false,
-		children
+		children,
+		front
 	}: {
 		aspect?: string;
 		power?: boolean;
 		delay?: number;
 		live?: boolean;
 		children: Snippet;
+		/** Interface laid over the glass (the Play key): not bent, lined or glared. */
+		front?: Snippet;
 	} = $props();
 
 	const uid = $props.id();
@@ -111,6 +114,7 @@
 	<div class="mask" aria-hidden="true"></div>
 	<div class="glass" aria-hidden="true"></div>
 	<div class="glare" aria-hidden="true"></div>
+	{#if front}<div class="front">{@render front()}</div>{/if}
 	{#if lens}
 		<svg class="defs" width="0" height="0" aria-hidden="true">
 			<LensFilter
@@ -206,6 +210,13 @@
 		background:
 			radial-gradient(130% 120% at 50% 50%, transparent 75%, rgb(0 0 0 / 0.35) 100%),
 			linear-gradient(155deg, rgb(255 255 255 / 0.06) 0%, transparent 30%);
+	}
+
+	.front {
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
 	}
 
 	/* The glare, lit while the mouse is over the glass. */
