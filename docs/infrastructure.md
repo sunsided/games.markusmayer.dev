@@ -60,14 +60,15 @@ gcloud iam roles list --project=$PROJECT --format='table(name.basename(),title,i
 Note from the output:
 
 - `LOCATION`: markusmayer.dev's bucket location.
-- `LB_IP`: the address of the HTTPS forwarding rule (port 443).
+- `LB_IP`, `LB_IP6`: the IPv4 and IPv6 addresses of the HTTPS forwarding rules (port 443).
 - `POOL`: the pool id (likely `github`).
 - `CDN_ROLE`: the custom role holding `compute.urlMaps.invalidateCache` (likely
   `cdnInvalidator`). If there is none, section 5 creates it.
 
 ```sh
 export LOCATION=...      # e.g. EUROPE-WEST3, as markusmayer.dev
-export LB_IP=...
+export LB_IP=...      # IPv4 of the 443 forwarding rule
+export LB_IP6=...     # IPv6 of the 443 forwarding rule
 export POOL=github
 export CDN_ROLE=cdnInvalidator
 ```
@@ -96,16 +97,17 @@ gcloud storage buckets add-iam-policy-binding gs://$BUCKET \
 ## 3. Backend bucket with Cloud CDN, and the host rule
 
 The upload sets `Cache-Control` per path (HTML `max-age=0`, hashed assets and builds
-`immutable` for a year). `USE_ORIGIN_HEADERS` makes the CDN honour that, and the TTLs are
-raised to a year, because Cloud CDN otherwise caps what it passes to the browser at an hour.
+`immutable` for a year). `USE_ORIGIN_HEADERS` makes the CDN cache and pass on exactly
+that. It takes no TTL flags: `--client-ttl`, `--default-ttl` and `--max-ttl` are refused
+in this mode ("max_ttl must be specified with CACHE_ALL_STATIC cache_mode only"). That is
+why it differs from markusmayer.dev's backend, which is `CACHE_ALL_STATIC` with year-long
+TTLs.
 
 ```sh
 gcloud compute backend-buckets create $BACKEND \
   --gcs-bucket-name=$BUCKET \
   --enable-cdn \
-  --cache-mode=USE_ORIGIN_HEADERS \
-  --client-ttl=31536000 \
-  --max-ttl=31536000
+  --cache-mode=USE_ORIGIN_HEADERS
 
 gcloud compute url-maps add-path-matcher $URL_MAP \
   --path-matcher-name=games \
@@ -128,6 +130,10 @@ drop the CDN's cache. No key is created; GitHub signs in through section 6.
 ```sh
 gcloud iam service-accounts create $SA_NAME \
   --display-name="games.markusmayer.dev deploy (GitHub Actions)"
+
+# A new account takes a few seconds to show up for IAM. Granting it a role at once can fail
+# with "Service account ... does not exist"; wait a little and run the grant again.
+sleep 30
 
 gcloud storage buckets add-iam-policy-binding gs://$BUCKET \
   --member=serviceAccount:$SA --role=roles/storage.objectAdmin
@@ -206,14 +212,21 @@ echo "$ZONE_ID"
 cf dns records list --zone $ZONE_ID | jq -r '.[] | select(.name == "markusmayer.dev" or .name == "www.markusmayer.dev") | [.type, .name, .content, .proxied] | @tsv'
 ```
 
-If markusmayer.dev is an `A` record to the load balancer (expected, given section 3), do
-the same:
+markusmayer.dev has an `A` and an `AAAA` record to the load balancer (its IPv4 and IPv6
+forwarding rules). Do the same, with `LB_IP6` the address of the IPv6 forwarding rule from
+section 1:
 
 ```sh
-cf dns records create --zone $ZONE_ID --dry-run \
-  --body "$(jq -nc --arg ip "$LB_IP" '{type:"A", name:"games", content:$ip, proxied:true, ttl:1, comment:"games.markusmayer.dev → Google LB"}')"
+for rec in "A $LB_IP" "AAAA $LB_IP6"; do
+  set -- $rec
+  cf dns records create --zone $ZONE_ID --dry-run \
+    --body "$(jq -nc --arg t "$1" --arg ip "$2" '{type:$t, name:"games", content:$ip, proxied:true, ttl:1, comment:"games.markusmayer.dev → Google LB"}')"
+done
 # Looks right? Run it again without --dry-run.
 ```
+
+Create the records last, after section 3: until the host rule exists, the url map's
+`*.markusmayer.dev` wildcard would serve markusmayer.dev itself under this name.
 
 If it is a `CNAME` instead, copy its target (`content`) and use
 `{type:"CNAME", name:"games", content:"<that target>", proxied:true, ttl:1}`.
