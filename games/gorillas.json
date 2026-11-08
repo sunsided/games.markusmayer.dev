@@ -13,11 +13,13 @@
 	"web": {
 		"asset": "gorillas-{version}-web.zip",
 		"entry": "play.html",
-		"aspect": "4 / 3"
+		"aspect": "4 / 3",
+		"sha256": "30223c00f820b1ce436e0fa992fc05f20cb6cb02f4af65ce8c2ae0481d36403b"
 	},
 	"cover": {
 		"path": ".readme/gorillas.png",
-		"alt": "A city skyline of red, grey and teal tower blocks under a blue sky and a smiling sun; a gorilla stands on a rooftop at each side, a banana in flight between them."
+		"alt": "A city skyline of red, grey and teal tower blocks under a blue sky and a smiling sun; a gorilla stands on a rooftop at each side, a banana in flight between them.",
+		"sha256": "0103291ccbe3da20181ae1ed2ce6239d66362d7ccb02d3ba9824a6ef3e671c1b"
 	},
 	"links": [
 		{
@@ -28,5 +30,10 @@
 			"label": "Source",
 			"url": "https://github.com/sunsided/gorillas.rs"
 		}
-	]
+	],
+	"release": {
+		"version": "v0.2.0",
+		"date": "2026-11-08T00:04:53Z",
+		"url": "https://github.com/sunsided/gorillas.rs/releases/tag/v0.2.0"
+	}
 }
