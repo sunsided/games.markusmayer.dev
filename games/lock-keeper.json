@@ -1,0 +1,33 @@
+{
+	"$schema": "./schema.json",
+	"slug": "lock-keeper",
+	"title": "The Lock-Keeper's Night",
+	"tagline": "The coroner comes at three.",
+	"description": "A 1923 canal murder, written into a constable's notebook by candlelight. Interactive fiction in Rust on loremaster and game-toolkit, native and in the browser.",
+	"repo": "sunsided/lock-keeper",
+	"tags": ["interactive-fiction", "text-adventure", "mystery", "rust", "wasm"],
+	"order": 50,
+	"frame": "pc",
+	"platform": "A constable's notebook, autumn 1923",
+	"accent": "#e0a94e",
+	"web": {
+		"asset": "lock-keeper-{version}-web.zip",
+		"aspect": "16 / 9",
+		"module": "lock-keeper.js",
+		"canvas": "lock-keeper"
+	},
+	"cover": {
+		"path": "docs/images/cover.png",
+		"alt": "A worn red leather notebook lying slightly askew on a dark wooden desk marked with tea rings; its gilt title reads The Lock-Keeper's Night."
+	},
+	"links": [
+		{
+			"label": "Linux binary",
+			"url": "https://github.com/sunsided/lock-keeper/releases/download/{version}/lock-keeper-{version}-linux-x86_64.tar.gz"
+		},
+		{
+			"label": "Source",
+			"url": "https://github.com/sunsided/lock-keeper"
+		}
+	]
+}
