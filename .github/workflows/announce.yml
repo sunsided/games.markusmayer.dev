@@ -9,8 +9,13 @@ name: Announce a game release
 #     uses: sunsided/games.markusmayer.dev/.github/workflows/announce.yml@main
 #     with:
 #       app-id: ${{ vars.GAMES_ANNOUNCE_APP_ID }}
-#     secrets:
-#       private-key: ${{ secrets.GAMES_ANNOUNCE_APP_PRIVATE_KEY }}
+#
+# The job runs in the caller's `games` environment, so the key lives there as the
+# environment secret GAMES_ANNOUNCE_APP_PRIVATE_KEY, limited to release tags (v*). A caller
+# job cannot set `environment:` itself, and environment secrets cannot be passed through
+# `secrets:`, hence it is set here. Create the environment first: one that does not exist is
+# created on the fly without protection. A repository-level key passed as `private-key` is
+# still accepted until every game has moved.
 #
 # The key is the *announce* app's (sunsided-games-announce), not the app that opens and
 # auto-merges the registry PR. The announce app has Contents: write and nothing else,
@@ -31,21 +36,30 @@ on:
         type: string
         default: ''
     secrets:
+      # Declared so the job may read it; the `games` environment's secret of this name
+      # takes its place. Callers do not pass it.
+      GAMES_ANNOUNCE_APP_PRIVATE_KEY:
+        description: The announce GitHub App's private key, from the `games` environment
+        required: false
       private-key:
-        description: The announce GitHub App's private key
-        required: true
+        description: The announce GitHub App's private key, if not in the `games` environment
+        required: false
 
 permissions: {}
 
 jobs:
   announce:
     runs-on: ubuntu-latest
+    # Resolved in the caller's repository.
+    environment:
+      name: games
+      url: https://games.markusmayer.dev
     steps:
       - id: app
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ inputs.app-id }}
-          private-key: ${{ secrets.private-key }}
+          private-key: ${{ secrets.GAMES_ANNOUNCE_APP_PRIVATE_KEY || secrets.private-key }}
           owner: sunsided
           repositories: games.markusmayer.dev
           # Belt and braces: even this token asks for no more than dispatch needs.

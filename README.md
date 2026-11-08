@@ -62,8 +62,9 @@ with the current tag.
    `cover.sha256` if the game has not released yet: it stays off the floor until its first
    release ping fills them in. Merge it. `web.assets` names the build's asset folder for
    games that load files at runtime (handed over as `data-assets`).
-2. In the game repository: set variable `GAMES_ANNOUNCE_APP_ID` and secret
-   `GAMES_ANNOUNCE_APP_PRIVATE_KEY` (the **announce** app's, see below), and add to its
+2. In the game repository: create an environment `games` with deployment tags limited to
+   `v*`, put the **announce** app's key (see below) in it as secret
+   `GAMES_ANNOUNCE_APP_PRIVATE_KEY`, set variable `GAMES_ANNOUNCE_APP_ID`, and add to its
    release workflow, after the job that publishes the release:
 
    ```yaml
@@ -72,9 +73,11 @@ with the current tag.
      uses: sunsided/games.markusmayer.dev/.github/workflows/announce.yml@main
      with:
        app-id: ${{ vars.GAMES_ANNOUNCE_APP_ID }}
-     secrets:
-       private-key: ${{ secrets.GAMES_ANNOUNCE_APP_PRIVATE_KEY }}
    ```
+
+   The announce job runs in that environment. Create it before the first release: a
+   missing one is created on the fly, unprotected. A repository-level secret passed as
+   `secrets: private-key:` still works for games that have not moved yet.
 
    For a web game the release also needs `SHA256SUMS` and an
    `actions/attest-build-provenance` attestation covering the web zip (cheesed and
