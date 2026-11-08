@@ -1,0 +1,52 @@
+name: Move the announce major tag
+
+# Releasing announce.yml: push an immutable tag announce-vX.Y.Z on a commit on main, and
+# this moves the major tag announce-vX to it. Game repositories pin either the moving
+# `@announce-v1` or a commit with its exact version in the comment
+# (`@<sha> # announce-v1.1.0`), which stays true when the major tag moves on.
+#
+# Only the highest X.*.* release moves announce-vX, so tagging a fix for an older minor
+# never moves it backwards. A tag on a commit that is not on main is refused.
+
+on:
+  push:
+    tags: ['announce-v[0-9]+.[0-9]+.[0-9]+']
+
+permissions: {}
+
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # update the major tag ref
+    steps:
+      - name: Point announce-vX at this release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$TAG" =~ ^announce-v([0-9]+)\.[0-9]+\.[0-9]+$ ]] || { echo "::error::$TAG is not announce-vX.Y.Z"; exit 1; }
+          major="announce-v${BASH_REMATCH[1]}"
+
+          status=$(gh api "repos/$REPO/compare/$SHA...main" --jq .status)
+          case "$status" in
+            ahead | identical) ;;
+            *) echo "::error::$TAG ($SHA) is not on main ($status)"; exit 1 ;;
+          esac
+
+          highest=$(gh api "repos/$REPO/git/matching-refs/tags/$major." --jq '.[].ref' |
+            sed 's|^refs/tags/||' | grep -E "^$major\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
+          if [ "$highest" != "$TAG" ]; then
+            echo "$TAG is not the highest $major release ($highest); $major stays."
+            exit 0
+          fi
+
+          if gh api "repos/$REPO/git/refs/tags/$major" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/$REPO/git/refs/tags/$major" -f sha="$SHA" -F force=true >/dev/null
+          else
+            gh api -X POST "repos/$REPO/git/refs" -f ref="refs/tags/$major" -f sha="$SHA" >/dev/null
+          fi
+          echo "$major → $TAG ($SHA)"

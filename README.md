@@ -70,10 +70,15 @@ with the current tag.
    ```yaml
    announce:
      needs: [release]
-     uses: sunsided/games.markusmayer.dev/.github/workflows/announce.yml@main
+     uses: sunsided/games.markusmayer.dev/.github/workflows/announce.yml@announce-v1
      with:
        app-id: ${{ vars.GAMES_ANNOUNCE_APP_ID }}
    ```
+
+   `announce-v1` moves with every compatible release of the workflow. To pin a commit
+   instead, write its exact release in the comment, `announce.yml@<sha> # announce-v1.1.0`,
+   which stays true when the major tag moves on. A release is a tag `announce-vX.Y.Z` on
+   main; pushing it moves `announce-vX` (announce-tag.yml).
 
    The announce job runs in that environment. Create it before the first release: a
    missing one is created on the fly, unprotected. A repository-level secret passed as

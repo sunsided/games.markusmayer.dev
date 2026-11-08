@@ -6,9 +6,12 @@ name: Announce a game release
 #
 #   announce:
 #     needs: [release]
-#     uses: sunsided/games.markusmayer.dev/.github/workflows/announce.yml@main
+#     uses: sunsided/games.markusmayer.dev/.github/workflows/announce.yml@announce-v1
 #     with:
 #       app-id: ${{ vars.GAMES_ANNOUNCE_APP_ID }}
+#
+# announce-v1 moves with each compatible release; to pin a commit instead, name its exact
+# release tag in the comment: `announce.yml@<sha> # announce-v1.1.0` (announce-tag.yml).
 #
 # The job runs in the caller's `games` environment, so the key lives there as the
 # environment secret GAMES_ANNOUNCE_APP_PRIVATE_KEY, limited to release tags (v*). A caller
