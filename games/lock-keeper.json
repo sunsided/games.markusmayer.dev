@@ -14,11 +14,13 @@
 		"asset": "lock-keeper-{version}-web.zip",
 		"aspect": "16 / 9",
 		"module": "lock-keeper.js",
-		"canvas": "lock-keeper"
+		"canvas": "lock-keeper",
+		"sha256": "7b5da2d4bf1f60dad8119143a835e7cc60daca6ade7822f1e6388472128120ab"
 	},
 	"cover": {
 		"path": "docs/images/cover.png",
-		"alt": "A worn red leather notebook lying slightly askew on a dark wooden desk marked with tea rings; its gilt title reads The Lock-Keeper's Night."
+		"alt": "A worn red leather notebook lying slightly askew on a dark wooden desk marked with tea rings; its gilt title reads The Lock-Keeper's Night.",
+		"sha256": "60ea4c0e9255574145e0ba00e2b202d45c7595730bb7596f6a350f016186efbd"
 	},
 	"links": [
 		{
@@ -29,5 +31,10 @@
 			"label": "Source",
 			"url": "https://github.com/sunsided/lock-keeper"
 		}
-	]
+	],
+	"release": {
+		"version": "v0.1.0",
+		"date": "2026-11-08T15:47:30Z",
+		"url": "https://github.com/sunsided/lock-keeper/releases/tag/v0.1.0"
+	}
 }
