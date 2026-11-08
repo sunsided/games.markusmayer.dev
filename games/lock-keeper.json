@@ -7,7 +7,7 @@
 	"repo": "sunsided/lock-keeper",
 	"tags": ["interactive-fiction", "text-adventure", "mystery", "rust", "wasm"],
 	"order": 50,
-	"frame": "device",
+	"frame": "pc",
 	"platform": "A constable's notebook, autumn 1923",
 	"accent": "#e0a94e",
 	"web": {
