@@ -14,7 +14,7 @@
 		"asset": "gorillas-{version}-web.zip",
 		"entry": "play.html",
 		"aspect": "4 / 3",
-		"sha256": "30223c00f820b1ce436e0fa992fc05f20cb6cb02f4af65ce8c2ae0481d36403b"
+		"sha256": "9c36675024e0bdbd67fe7c6892298c586b401bb80e35f17edd94311b61327812"
 	},
 	"cover": {
 		"path": ".readme/gorillas.png",
@@ -32,8 +32,8 @@
 		}
 	],
 	"release": {
-		"version": "v0.2.0",
-		"date": "2026-11-08T00:04:53Z",
-		"url": "https://github.com/sunsided/gorillas.rs/releases/tag/v0.2.0"
+		"version": "v0.2.1",
+		"date": "2026-11-08T01:19:07Z",
+		"url": "https://github.com/sunsided/gorillas.rs/releases/tag/v0.2.1"
 	}
 }
