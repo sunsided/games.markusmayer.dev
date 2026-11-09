@@ -15,7 +15,7 @@
 		"aspect": "16 / 9",
 		"module": "lock-keeper.js",
 		"canvas": "lock-keeper",
-		"sha256": "7b5da2d4bf1f60dad8119143a835e7cc60daca6ade7822f1e6388472128120ab"
+		"sha256": "6cd1d1dfc99c6ff782dfc388514dd206a6600d0ff05695e05c8aac268624d88e"
 	},
 	"cover": {
 		"path": "docs/images/cover.png",
@@ -33,8 +33,8 @@
 		}
 	],
 	"release": {
-		"version": "v0.1.0",
-		"date": "2026-11-08T15:47:30Z",
-		"url": "https://github.com/sunsided/lock-keeper/releases/tag/v0.1.0"
+		"version": "v0.1.1",
+		"date": "2026-11-09T00:35:48Z",
+		"url": "https://github.com/sunsided/lock-keeper/releases/tag/v0.1.1"
 	}
 }
