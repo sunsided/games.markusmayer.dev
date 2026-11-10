@@ -16,11 +16,13 @@
 		"native": [640, 480],
 		"module": "sporagon.js",
 		"canvas": "sporagon",
-		"restart": "sporagon:restart"
+		"restart": "sporagon:restart",
+		"sha256": "2f7ec90c60358051997c4cdc363c1fd40fb530dd9b01de48bcd620da2e32556c"
 	},
 	"cover": {
 		"path": "docs/screenshot.jpg",
-		"alt": "A hexagonal egg tray in a grimy fridge, two green Penicillium and two white Rhizopus colonies in its corners and three cups knocked out of its centre; embossed label strips on the wall show the score and \"YOUR MOVE\"."
+		"alt": "A hexagonal egg tray in a grimy fridge, two green Penicillium and two white Rhizopus colonies in its corners and three cups knocked out of its centre; embossed label strips on the wall show the score and \"YOUR MOVE\".",
+		"sha256": "5248da470e6c221d4ca560483cbd474a184dc53b725fb5ce19438c0317c03294"
 	},
 	"links": [
 		{
@@ -31,5 +33,10 @@
 			"label": "Source",
 			"url": "https://github.com/sunsided/sporagon"
 		}
-	]
+	],
+	"release": {
+		"version": "v0.1.0",
+		"date": "2026-11-10T13:09:47Z",
+		"url": "https://github.com/sunsided/sporagon/releases/tag/v0.1.0"
+	}
 }
