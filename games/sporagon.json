@@ -17,7 +17,7 @@
 		"module": "sporagon.js",
 		"canvas": "sporagon",
 		"restart": "sporagon:restart",
-		"sha256": "2f7ec90c60358051997c4cdc363c1fd40fb530dd9b01de48bcd620da2e32556c"
+		"sha256": "da1c6fc887343f3d83931ced5a7184f3d783366b79d6434080e622cd40525fa1"
 	},
 	"cover": {
 		"path": "docs/screenshot.jpg",
@@ -35,8 +35,8 @@
 		}
 	],
 	"release": {
-		"version": "v0.1.0",
-		"date": "2026-11-10T13:09:47Z",
-		"url": "https://github.com/sunsided/sporagon/releases/tag/v0.1.0"
+		"version": "v0.1.1",
+		"date": "2026-11-10T13:33:31Z",
+		"url": "https://github.com/sunsided/sporagon/releases/tag/v0.1.1"
 	}
 }
