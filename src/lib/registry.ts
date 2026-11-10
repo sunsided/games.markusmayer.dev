@@ -255,6 +255,12 @@ export function byOrder(a: Released, b: Released) {
 	);
 }
 
+/** An `order` that puts a game ahead of all `others`; undefined when none of them has one. */
+export function leadOrder(others: Pick<Game, 'order'>[]): number | undefined {
+	const orders = others.flatMap((g) => (g.order === undefined ? [] : [g.order]));
+	return orders.length ? Math.min(...orders) - 10 : undefined;
+}
+
 /** Semver-ish comparison of two tags; prerelease sorts before its release. */
 export function compareVersions(a: string, b: string): number {
 	const parse = (v: string) => {

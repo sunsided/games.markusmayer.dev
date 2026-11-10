@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { compareVersions, fill } from '../src/lib/registry.ts';
+import { compareVersions, fill, leadOrder } from '../src/lib/registry.ts';
 import { checkZip, loadGames } from '../scripts/lib.ts';
 
 test('every registry entry validates and matches its file name', () => {
@@ -22,6 +22,12 @@ test('compareVersions orders tags', () => {
 	assert.ok(compareVersions('v1.0.0', 'v1.0.0-rc.1') > 0);
 	assert.ok(compareVersions('v1.0.0-rc.2', 'v1.0.0-rc.10') < 0);
 	assert.equal(compareVersions('1.2.3', 'v1.2.3'), 0);
+});
+
+test('leadOrder goes ahead of the lowest order', () => {
+	assert.equal(leadOrder([{ order: 30 }, {}, { order: 10 }]), 0);
+	assert.equal(leadOrder([{}]), undefined);
+	assert.equal(leadOrder([]), undefined);
 });
 
 test('fill replaces every {version}', () => {

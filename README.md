@@ -27,7 +27,8 @@ Re-run any release by hand: Actions → _Game released_ → _Run workflow_, or l
 
 One `games/<slug>.json` per game, shape in [`games/schema.json`](games/schema.json).
 Editorial fields (title, tagline, description, tags, order, links) are yours; the bot only
-rewrites `release` and `web.sha256`. `{version}` in `web.asset` and in link URLs is filled
+rewrites `release` and `web.sha256`, and on a game's first release sets `order` to put it
+first on the index. `{version}` in `web.asset` and in link URLs is filled
 with the current tag.
 
 - **Web game**: has `web`. The release asset is a zip whose `index.html` uses relative

@@ -24,6 +24,7 @@ import {
 	compareVersions,
 	coverSource,
 	fill,
+	leadOrder,
 	validate
 } from '../src/lib/registry.ts';
 import {
@@ -58,7 +59,8 @@ const tag = values.tag ?? '';
 if (!REPO.test(repo)) throw new Error(`--repo: "${repo}" is not owner/name`);
 if (!VERSION.test(tag)) throw new Error(`--tag: "${tag}" is not a version tag`);
 
-const game = loadGames().find((g) => g.repo.toLowerCase() === repo.toLowerCase());
+const games = loadGames();
+const game = games.find((g) => g.repo.toLowerCase() === repo.toLowerCase());
 if (!game) {
 	throw new Error(`${repo} is not registered. Add games/<slug>.json by hand first (see README).`);
 }
@@ -92,6 +94,12 @@ if (release.draft || release.prerelease) {
 
 const next = structuredClone(game);
 next.release = { version: tag, date: release.published_at, url: release.html_url };
+
+// A first release leads the index: ahead of every other game, whatever order it was onboarded with.
+if (!pinned) {
+	const lead = leadOrder(games.filter((g) => g !== game));
+	if (lead !== undefined && (game.order === undefined || game.order > lead)) next.order = lead;
+}
 
 if (game.web) {
 	const name = fill(game.web.asset, tag);
