@@ -15,7 +15,8 @@
 		"aspect": "4 / 3",
 		"native": [640, 480],
 		"module": "sporagon.js",
-		"canvas": "sporagon"
+		"canvas": "sporagon",
+		"restart": "sporagon:restart"
 	},
 	"cover": {
 		"path": "docs/screenshot.jpg",
