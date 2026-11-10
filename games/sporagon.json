@@ -6,7 +6,7 @@
 	"description": "A Hexxagon-style mould war on a cracked egg tray: your Penicillium against the computer's Rhizopus, every colony, slime bridge and stain painted procedurally into 256 colours. Rust on an emulated VESA SVGA card, native and in the browser.",
 	"repo": "sunsided/sporagon",
 	"tags": ["board", "strategy", "dos", "rust", "wasm"],
-	"order": 60,
+	"order": 10,
 	"frame": "pc",
 	"platform": "DOS PC, VESA SVGA 640×480×256",
 	"accent": "#4f9a7a",

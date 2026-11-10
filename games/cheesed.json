@@ -6,7 +6,7 @@
 	"description": "A thrilling action adventure in DOS-era dress. Rust, native and WebAssembly.",
 	"repo": "sunsided/cheesed",
 	"tags": ["action", "dos", "rust", "wasm"],
-	"order": 10,
+	"order": 30,
 	"frame": "pc",
 	"platform": "DOS PC, VGA 320×200",
 	"accent": "#9a6bff",

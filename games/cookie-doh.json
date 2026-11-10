@@ -6,7 +6,7 @@
 	"description": "A silly C64/Amiga-era arcade game in Rust, built on game-toolkit.",
 	"repo": "sunsided/cookie-doh",
 	"tags": ["arcade", "rust", "wasm"],
-	"order": 20,
+	"order": 40,
 	"frame": "arcade",
 	"platform": "C64 and Amiga-era arcade",
 	"accent": "#ff9c3a",

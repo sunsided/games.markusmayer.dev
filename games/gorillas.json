@@ -6,7 +6,7 @@
 	"description": "GORILLAS.BAS of 1991, ported statement by statement to Rust on an emulated VGA card and PC speaker, checked pixel for pixel against QBasic. Native and in the browser.",
 	"repo": "sunsided/gorillas.rs",
 	"tags": ["artillery", "dos", "qbasic", "rust", "wasm"],
-	"order": 40,
+	"order": 20,
 	"frame": "pc",
 	"platform": "DOS PC, QBasic 1.1, EGA 640×350",
 	"accent": "#3355ff",

@@ -6,7 +6,7 @@
 	"description": "A fan-made rebuild of the Elektronika IM-02 LCD handheld of 1984, in Rust on game-toolkit, native and in the browser.",
 	"repo": "sunsided/nupogodi",
 	"tags": ["lcd", "handheld", "rust", "wasm"],
-	"order": 30,
+	"order": 50,
 	"frame": "device",
 	"platform": "Elektronika IM-02 LCD handheld, 1984",
 	"accent": "#e5483d",

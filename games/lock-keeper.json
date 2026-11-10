@@ -6,7 +6,7 @@
 	"description": "A 1923 canal murder, written into a constable's notebook by candlelight. Interactive fiction in Rust on loremaster and game-toolkit, native and in the browser.",
 	"repo": "sunsided/lock-keeper",
 	"tags": ["interactive-fiction", "text-adventure", "mystery", "rust", "wasm"],
-	"order": 50,
+	"order": 60,
 	"frame": "pc",
 	"platform": "A constable's notebook, autumn 1923",
 	"accent": "#e0a94e",
