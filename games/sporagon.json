@@ -1,0 +1,34 @@
+{
+	"$schema": "./schema.json",
+	"slug": "sporagon",
+	"title": "SPORAGON",
+	"tagline": "Hexxagon in the back of a forgotten fridge.",
+	"description": "A Hexxagon-style mould war on a cracked egg tray: your Penicillium against the computer's Rhizopus, every colony, slime bridge and stain painted procedurally into 256 colours. Rust on an emulated VESA SVGA card, native and in the browser.",
+	"repo": "sunsided/sporagon",
+	"tags": ["board", "strategy", "dos", "rust", "wasm"],
+	"order": 60,
+	"frame": "pc",
+	"platform": "DOS PC, VESA SVGA 640×480×256",
+	"accent": "#4f9a7a",
+	"web": {
+		"asset": "sporagon-{version}-web.zip",
+		"aspect": "4 / 3",
+		"native": [640, 480],
+		"module": "sporagon.js",
+		"canvas": "sporagon"
+	},
+	"cover": {
+		"path": "docs/screenshot.jpg",
+		"alt": "A hexagonal egg tray in a grimy fridge, two green Penicillium and two white Rhizopus colonies in its corners and three cups knocked out of its centre; embossed label strips on the wall show the score and \"YOUR MOVE\"."
+	},
+	"links": [
+		{
+			"label": "Linux binary",
+			"url": "https://github.com/sunsided/sporagon/releases/download/{version}/sporagon-{version}-linux-x86_64.tar.gz"
+		},
+		{
+			"label": "Source",
+			"url": "https://github.com/sunsided/sporagon"
+		}
+	]
+}
