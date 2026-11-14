@@ -13,7 +13,8 @@
 		"asset": "rubyrushers-{version}-web.zip",
 		"aspect": "4 / 3",
 		"module": "rubyrushers.js",
-		"canvas": "rubyrushers"
+		"canvas": "rubyrushers",
+		"restart": "rubyrushers:restart"
 	},
 	"cover": {
 		"path": "docs/rush.png",
