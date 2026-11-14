@@ -1,0 +1,32 @@
+{
+	"$schema": "./schema.json",
+	"slug": "rubyrushers",
+	"title": "RubyRushers",
+	"tagline": "Sixty seconds, sixty-four gems, no mercy.",
+	"description": "A fast match-three game on game-toolkit: a 60-second Rush with time gems, an Endless mode that ends when no move is left, and Tilt, where gravity turns a quarter every fifteen seconds. Written mainly so that its bot, which plays from screenshots alone, has something to play.",
+	"repo": "sunsided/rubyrushers",
+	"tags": ["match-three", "puzzle", "rust", "wasm"],
+	"frame": "arcade",
+	"platform": "Arcade cabinet, 960×720",
+	"accent": "#e0245e",
+	"web": {
+		"asset": "rubyrushers-{version}-web.zip",
+		"aspect": "4 / 3",
+		"module": "rubyrushers.js",
+		"canvas": "rubyrushers"
+	},
+	"cover": {
+		"path": "docs/rush.png",
+		"alt": "Rush mode mid-game: an 8×8 board of coloured gems with sparks, score popups, a bomb going off and time gems, next to a panel with the score and the clock."
+	},
+	"links": [
+		{
+			"label": "Linux binary",
+			"url": "https://github.com/sunsided/rubyrushers/releases/download/{version}/rubyrushers-{version}-linux-x86_64.tar.gz"
+		},
+		{
+			"label": "Source",
+			"url": "https://github.com/sunsided/rubyrushers"
+		}
+	]
+}
