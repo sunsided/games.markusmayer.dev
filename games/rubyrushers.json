@@ -14,11 +14,13 @@
 		"aspect": "4 / 3",
 		"module": "rubyrushers.js",
 		"canvas": "rubyrushers",
-		"restart": "rubyrushers:restart"
+		"restart": "rubyrushers:restart",
+		"sha256": "1ea0c11ef1e8f5ffaf14ca7ef6f2e81c6673b901746966e262a70358cf4ed4d3"
 	},
 	"cover": {
 		"path": "docs/rush.png",
-		"alt": "Rush mode mid-game: an 8×8 board of coloured gems with sparks, score popups, a bomb going off and time gems, next to a panel with the score and the clock."
+		"alt": "Rush mode mid-game: an 8×8 board of coloured gems with sparks, score popups, a bomb going off and time gems, next to a panel with the score and the clock.",
+		"sha256": "9df6d684c3154006bce1b0eba3872b6135495cf5c3c7e6d917d7e9688659e14a"
 	},
 	"links": [
 		{
@@ -29,5 +31,11 @@
 			"label": "Source",
 			"url": "https://github.com/sunsided/rubyrushers"
 		}
-	]
+	],
+	"release": {
+		"version": "v0.1.0",
+		"date": "2026-11-14T17:48:17Z",
+		"url": "https://github.com/sunsided/rubyrushers/releases/tag/v0.1.0"
+	},
+	"order": 0
 }
